@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dal potenziale al caos – canovaccio di lezione</title>
+<style>
+  :root{
+    --bg:#eef2f7; --paper:#fff; --ink:#142a4c; --muted:#5d6b82; --rule:#d5dde9; --soft:#f3f6fa;
+    --rel:#9a5b00; --rel-bg:#fff8ee; --rel-rule:#ecd2a8;
+    --stu:#00695c; --stu-bg:#effaf7; --stu-rule:#b7e0d8;
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{scroll-padding-top:120px}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--serif);font-size:17.5px;line-height:1.6}
+  .bar{position:sticky;top:0;z-index:10;background:rgba(255,255,255,.96);backdrop-filter:blur(6px);border-bottom:1px solid var(--rule);font-family:var(--sans);font-size:14px}
+  .bar-in{max-width:980px;margin:0 auto;padding:8px 20px;display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;justify-content:space-between}
+  .bar .group{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+  .bar button{font:inherit;border:1px solid var(--rule);background:#fff;color:var(--ink);padding:6px 11px;border-radius:7px;cursor:pointer}
+  .bar button:hover{background:var(--soft)}
+  .bar button.rel{color:var(--rel);border-color:var(--rel-rule)}
+  .bar button.stu{color:var(--stu);border-color:var(--stu-rule)}
+  .bar button.on{background:var(--ink);border-color:var(--ink);color:#fff}
+  nav.tappe{display:flex;gap:2px;align-items:center}
+  nav.tappe span{color:var(--muted);margin-right:4px}
+  nav.tappe a{color:var(--ink);text-decoration:none;padding:3px 7px;border-radius:5px;font-variant-numeric:tabular-nums}
+  nav.tappe a:hover{background:var(--soft)}
+  main{max-width:980px;margin:0 auto;padding:24px 20px 60px}
+  header.doc{margin:10px 0 18px}
+  header.doc h1{font-size:clamp(26px,3.4vw,36px);line-height:1.15;margin:0 0 6px}
+  header.doc .by{color:var(--muted);font-family:var(--sans);font-size:14px}
+  header.doc .student-only{display:none}
+  section.tappa{background:var(--paper);border:1px solid var(--rule);border-radius:12px;padding:20px 28px 22px;margin:0 0 18px}
+  h2{font-size:24px;line-height:1.25;margin:0 0 10px}
+  h3{font-size:19px;margin:18px 0 8px}
+  p{margin:0 0 12px}
+  ul,ol{margin:0 0 12px;padding-left:24px}
+  li{margin:0 0 6px}
+  a{color:#2052c9}
+  strong{font-weight:700}
+  table{border-collapse:collapse;margin:8px 0 14px;font-family:var(--sans);font-size:14.5px;width:100%}
+  th,td{border-bottom:1px solid var(--rule);padding:6px 8px;text-align:left;vertical-align:top}
+  th{border-bottom:1.5px solid var(--ink);font-weight:600}
+  .formula{text-align:center;margin:10px 0 16px;overflow-x:auto}
+  .formula img{max-width:100%;height:auto;vertical-align:middle}
+  img.fig{display:block;max-width:100%;height:auto;margin:14px auto 6px;border:1px solid var(--rule);border-radius:8px;background:#fff}
+  img.fig + p em, p:has(> em:only-child){color:var(--muted)}
+  p > em:only-child{display:block;font-size:15px;color:var(--muted);margin-top:-2px}
+  svg.path{display:block;width:100%;height:auto;margin:6px 0 8px}
+  svg.path a:hover rect{stroke-width:2}
+  aside.tip{margin:12px 0;padding:10px 14px;border-left:4px solid var(--stu);background:var(--stu-bg);border-radius:0 8px 8px 0}
+  aside.tip p{margin:0}
+  details.lvl{margin:12px 0 0;border:1px solid var(--rule);border-radius:10px;overflow:hidden}
+  details.lvl > summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;padding:9px 14px;font-family:var(--sans);font-size:15px;font-weight:600}
+  details.lvl > summary::-webkit-details-marker{display:none}
+  details.lvl .ico{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;color:#fff;font-size:13px}
+  details.lvl .hint{margin-left:auto;font-weight:400;font-size:13px;color:var(--muted)}
+  details.lvl[open] .hint{font-size:0}
+  details.lvl[open] .hint::after{content:"chiudi";font-size:13px}
+  details.rel{border-color:var(--rel-rule)}
+  details.rel > summary{background:var(--rel-bg);color:var(--rel)}
+  details.rel .ico{background:var(--rel)}
+  details.stu{border-color:var(--stu-rule)}
+  details.stu > summary{background:var(--stu-bg);color:var(--stu)}
+  details.stu .ico{background:var(--stu)}
+  .lvl-body{padding:6px 18px 8px}
+  details.rel .lvl-body{border-top:1px solid var(--rel-rule)}
+  details.stu .lvl-body{border-top:1px solid var(--stu-rule)}
+  .lvl-title{display:none}
+
+  /* versione per lo studente: solo i testi per lo studente */
+  body.student .can, body.student .tappa-title, body.student details.rel, body.student details.stu > summary, body.student nav.tappe, body.student #openRel, body.student #openStu, body.student #closeAll{display:none}
+  body.student details.stu{border:none;margin:0}
+  body.student details.stu .lvl-body{border:none;padding:0}
+  body.student .lvl-title{display:block;font-size:24px;margin:0 0 10px}
+  body.student header.doc .teacher-only{display:none}
+  body.student header.doc .student-only{display:block}
+  body.student section.tappa:has(details.stu) {display:block}
+  body.student section.tappa:not(:has(details.stu)){display:none}
+
+  @media print{
+    body{background:#fff;font-size:12pt}
+    .bar{display:none}
+    main{padding:0;max-width:none}
+    section.tappa{border:none;padding:0;margin:0 0 14pt;break-inside:auto}
+    details.lvl > summary .hint{display:none}
+    img.fig, .formula, svg.path, table{break-inside:avoid}
+    h2,h3{break-after:avoid}
+    body.student section.tappa{break-before:page}
+    body.student section.tappa:first-of-type{break-before:auto}
+  }
+</style>
+</head>
+<body>
+<div class="bar"><div class="bar-in">
+  <div class="group">
+    <button class="rel" id="openRel">Apri tutte le note del relatore</button>
+    <button class="stu" id="openStu">Apri tutti i testi studente</button>
+    <button id="closeAll">Chiudi tutto</button>
+  </div>
+  <div class="group">
+    <button id="student" aria-pressed="false">Versione per lo studente</button>
+    <button id="print">Stampa o salva in PDF</button>
+  </div>
+  <nav class="tappe" aria-label="Tappe"><span>Vai a:</span>@@NAV@@</nav>
+</div></div>
+<main>
+  <header class="doc">
+    <h1 class="teacher-only">Dal potenziale al caos – canovaccio di lezione</h1>
+    <h1 class="student-only">Dal potenziale al caos – testo per lo studente</h1>
+    <div class="by teacher-only">@@BYLINE@@ · Ogni tappa ha due pannelli apribili: <b style="color:var(--rel)">note per il relatore</b> e <b style="color:var(--stu)">testo per lo studente</b>.</div>
+    <div class="by student-only">Leggi una sezione, poi prova sul Laboratorio del potenziale elettrostatico quello che hai letto.</div>
+  </header>
+  @@SECTIONS@@
+</main>
+<script>
+(() => {
+  const all = () => document.querySelectorAll('details.lvl');
+  const set = (sel, open) => document.querySelectorAll(sel).forEach(d => d.open = open);
+  document.getElementById('openRel').onclick = () => set('details.rel', true);
+  document.getElementById('openStu').onclick = () => set('details.stu', true);
+  document.getElementById('closeAll').onclick = () => set('details.lvl', false);
+  const sBtn = document.getElementById('student');
+  let saved = null;
+  sBtn.onclick = () => {
+    const on = !document.body.classList.contains('student');
+    if (on){ saved = [...all()].map(d => d.open); set('details.stu', true); }
+    else if (saved){ all().forEach((d, i) => d.open = saved[i]); }
+    document.body.classList.toggle('student', on);
+    sBtn.classList.toggle('on', on); sBtn.setAttribute('aria-pressed', on);
+    sBtn.textContent = on ? 'Torna al canovaccio' : 'Versione per lo studente';
+    window.scrollTo(0, 0);
+  };
+  // In stampa i pannelli chiusi non comparirebbero: si stampa ciò che è aperto
+  // (nella versione per lo studente tutti i testi sono già aperti).
+  document.getElementById('print').onclick = () => window.print();
+})();
+</script>
+</body>
+</html>
