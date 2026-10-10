@@ -1,6 +1,6 @@
 # Dal potenziale al caos – canovaccio di lezione
 
-Oct 10, 2026 · @Ivan Molineris
+10 ottobre 2026 · Ivan Molineris
 
 ## Come usare questo canovaccio
 
@@ -8,9 +8,9 @@ In nove tappe si va dalla legge di Coulomb ai bacini di attrazione frattali, usa
 
 Ogni punto esiste in tre livelli, con la stessa numerazione:
 
-- **Canovaccio** (questa scheda): cosa dire, in ordine, e cosa fare sul laboratorio.
-- **Note per il relatore** Note per il relatore: fisica, conti di controllo, errori tipici degli studenti.
-- **Testo per lo studente** Testo per lo studente: spiegazione da leggere da soli, con figure e istruzioni per il simulatore.
+- **Canovaccio** (sempre visibile): cosa dire, in ordine, e cosa fare sul laboratorio.
+- **Note per il relatore** (pannello apribile sotto ogni tappa): fisica, conti di controllo, errori tipici degli studenti.
+- **Testo per lo studente** (secondo pannello apribile): spiegazione da leggere da soli, con figure e istruzioni per il simulatore.
 
 Tempi indicativi:
 
@@ -25,7 +25,7 @@ Tempi indicativi:
 - **Convenzioni del laboratorio:** posizioni in cm, cariche in nC, potenziale in V; la carica di prova vale 1 nC e ha massa 1 g.
 - **Legenda:** le righe *Laboratorio* indicano l'azione da fare sul simulatore.
 
-&#91;embedded content: il percorso · 9 tappe in 3 incontri\]
+@@PERCORSO@@
 
 Ogni incontro corrisponde a una scheda del laboratorio; le tappe si leggono dall'alto in basso, colonna per colonna.
 
@@ -40,8 +40,6 @@ Incontro A, circa 20 minuti. Il potenziale nasce da una sola proprietà: il lavo
 - **Laboratorio:** configurazione «Carica singola» (+2 nC); la sonda a 2 cm legge circa 899 V, a 4 cm circa 449 V. Raddoppiando la distanza il potenziale si dimezza.
 - **Domanda guida:** perché al potenziale basta un numero per punto, mentre al campo ne servono due?
 
-Approfondisci: Note per il relatore sezione 1 · Testo per lo studente sezione 1
-
 ## 2 · Leggere il potenziale: isoipse e superficie
 
 Incontro A, circa 20 minuti. Il potenziale si legge come una carta topografica: le isoipse sono le curve di livello, la superficie 3D è il rilievo.
@@ -54,8 +52,6 @@ Incontro A, circa 20 minuti. Il potenziale si legge come una carta topografica: 
 - **Laboratorio:** aggiungere una terza carica con un clic e chiedere di prevedere la nuova mappa prima di guardarla.
 - **Domanda guida:** perché due isoipse non possono mai incrociarsi?
 
-Approfondisci: Note per il relatore sezione 2 · Testo per lo studente sezione 2
-
 ## 3 · Campo e potenziale
 
 Incontro A, circa 20 minuti. Campo e potenziale sono la stessa informazione: il campo è la «discesa più ripida» del potenziale.
@@ -66,8 +62,6 @@ Incontro A, circa 20 minuti. Campo e potenziale sono la stessa informazione: il 
 - **3.4 Lettura sulla superficie.** In ogni punto E indica la direzione in cui la superficie scende più ripida.
 - **Laboratorio:** «Dipolo», Campo elettrico → «Linee di campo», poi «Vettori E». Misurare Δs tra due isoipse vicine, calcolare ΔV/Δs e confrontarlo con |E| della sonda.
 - **Domanda guida (ponte verso la tappa 4):** una carica lasciata libera seguirà una linea di campo?
-
-Approfondisci: Note per il relatore sezione 3 · Testo per lo studente sezione 3
 
 ## 4 · Una carica che si muove
 
@@ -81,8 +75,6 @@ Incontro B, circa 25 minuti. La forza dice come cambia la velocità, non dove va
 - **Laboratorio:** «Posiziona una carica di prova», clic e trascinamento per dare la velocità iniziale; far prevedere la traiettoria prima di premere Avvia.
 - **Domanda guida:** perché nel 3D la carica positiva si comporta come una pallina che rotola, e cosa cambia se q₀ è negativa?
 
-Approfondisci: Note per il relatore sezione 4 · Testo per lo studente sezione 4
-
 ## 5 · Orbite e diffusione
 
 Incontro B, circa 35 minuti. La forza di Coulomb ha la stessa forma della gravità di Newton, quindi produce le stesse orbite.
@@ -94,8 +86,6 @@ Incontro B, circa 35 minuti. La forza di Coulomb ha la stessa forma della gravit
 - **5.5 Deflessione.** Tra due file di cariche opposte il campo è quasi uniforme: le traiettorie sono quasi parabole e le cariche più veloci deviano meno.
 - **Laboratorio:** scheda 2, i preset nell'ordine: Orbita circolare, Orbite ellittiche, Rosetta, Rutherford, Deflessione. Tenere aperta la tabella dell'energia.
 - **Domanda guida:** perché Rutherford, dalle poche particelle che tornavano indietro, dedusse che la carica positiva dell'atomo è concentrata in un nucleo?
-
-Approfondisci: Note per il relatore sezione 5 · Testo per lo studente sezione 5
 
 ## 6 · Sistemi dinamici e spazio delle fasi
 
@@ -109,8 +99,6 @@ Incontro C, circa 15 minuti. Cambia il punto di vista: invece di una traiettoria
 - **Avvertenza da dire subito:** il grafico è una proiezione di uno spazio a quattro dimensioni, quindi le curve possono sembrare incrociarsi.
 - **Domanda guida:** se cambio di poco la velocità iniziale, l'orbita circolare cambia di poco o di tanto?
 
-Approfondisci: Note per il relatore sezione 6 · Testo per lo studente sezione 6
-
 ## 7 · Attrattori regolari: punto fisso e ciclo limite
 
 Incontro C, circa 20 minuti. Con l'attrito il sistema «dimentica» da dove è partito: le traiettorie convergono verso un attrattore.
@@ -123,8 +111,6 @@ Incontro C, circa 20 minuti. Con l'attrito il sistema «dimentica» da dove è p
 - **Laboratorio:** scheda 3, «Prova: il punto fisso», poi «Prova: il ciclo limite», con lo spazio delle fasi a destra. Indicare la spirale verso un punto e le curve che convergono su un anello.
 - **Domanda guida:** quali oggetti di tutti i giorni hanno un ciclo limite? (orologio a pendolo, cuore, archetto del violino)
 
-Approfondisci: Note per il relatore sezione 7 · Testo per lo studente sezione 7
-
 ## 8 · Caos e attrattori strani
 
 Incontro C, circa 30 minuti. Un sistema perfettamente deterministico può essere imprevedibile in pratica: è il caos.
@@ -136,8 +122,6 @@ Incontro C, circa 30 minuti. Un sistema perfettamente deterministico può essere
 - **8.5 Attrattore strano.** Attrito attivo + tre ostacoli: da ogni partenza la carica finisce nella stessa regione aggrovigliata, ma partenze vicine si separano e il moto non si ripete. È l'analogo dell'attrattore di Lorenz (1963).
 - **Laboratorio:** scheda 3, «Prova: il biliardo elettrico» a 4×: seguire P1 e P2 che si separano, P3 che resta ordinata. Poi «Prova: l'attrattore strano» a 8×, lasciato correre due minuti a schermo intero sullo spazio delle fasi.
 - **Domanda guida:** se misuro la posizione iniziale dieci volte meglio, di quanto si allunga il tempo in cui posso prevedere il moto?
-
-Approfondisci: Note per il relatore sezione 8 · Testo per lo studente sezione 8
 
 ## 9 · Bacini di attrazione frattali
 
@@ -152,8 +136,6 @@ Incontro C, circa 20 minuti. Anche quando ogni moto finisce in modo semplice, pr
 - **Collegamenti:** il pendolo magnetico, i bacini del metodo di Newton per z³ = 1, l'insieme di Mandelbrot.
 - **Domanda guida:** che cosa hanno in comune un pendolo magnetico e le previsioni del tempo?
 
-Approfondisci: Note per il relatore sezione 9 · Testo per lo studente sezione 9
-
 ## Chiusura
 
 Ultimi 10 minuti dell'incontro C. Il filo del percorso si riassume in tre frasi da far ripetere agli studenti:
@@ -163,5 +145,5 @@ Ultimi 10 minuti dell'incontro C. Il filo del percorso si riassume in tre frasi 
 3. Leggi semplici e deterministiche possono generare moti imprevedibili e confini frattali.
 
 - **Discussione:** determinismo e prevedibilità sono la stessa cosa? (il «demone di Laplace» contro il caos)
-- **Verifica:** le domande sono in fondo al testo per lo studente Testo per lo studente, le soluzioni in fondo alle note per il relatore Note per il relatore.
+- **Verifica:** le domande sono nel pannello «Testo per lo studente» qui sotto, le soluzioni nel pannello «Note per il relatore».
 - **Per chi vuole proseguire:** misurare l'orizzonte di prevedibilità con due cariche sempre più vicine; costruire con le cariche un proprio «pendolo magnetico» e calcolarne la mappa dei bacini.

@@ -1,0 +1,5 @@
+# Solo per costruire la lezione (lezione/build.py) e per le catture (strumenti/shots.py)
+markdown
+matplotlib
+Pillow
+playwright

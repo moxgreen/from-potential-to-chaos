@@ -1,22 +1,18 @@
 import re, io, base64, html
+from pathlib import Path
 import markdown, matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from PIL import Image
 plt.rcParams['mathtext.fontset']='dejavuserif'
 
-FIG='/mnt/user-data/outputs/figure/'
-IMG={"L'interfaccia del laboratorio":'f0_interfaccia',"Una carica singola e la sonda":'f1_singola',
-"Il dipolo in due e tre dimensioni":'f2_dipolo',"Linee di campo e isoipse del dipolo":'f3_linee',
-"Traiettoria e linea di campo nel dipolo":'f4_ferma',"Orbite ellittiche e diffusione di Rutherford":'f5_orbite_rutherford',
-"Orbita circolare nello spazio delle fasi":'f6_circolare_fasi',"Quattro comportamenti a lungo termine":'f6_schema_comportamenti',
-"Il punto fisso":'f7_puntofisso',"Il ciclo limite":'f7_ciclo',"Il biliardo elettrico":'f8_biliardo',
-"Crescita della distanza tra due traiettorie vicine":'f8_separazione',"L'attrattore strano del laboratorio":'f8_attrattore',
-"La mappa dei bacini nel laboratorio":'f9_bacini_2d',"Ingrandimento di un confine tra bacini":'f9_zoom'}
-CHARTS={'f6_schema_comportamenti','f8_separazione','f9_zoom'}
+ROOT=Path(__file__).resolve().parent.parent
+HERE=ROOT/'lezione'; FIG=ROOT/'figure'; OUT=ROOT/'dist'/'lezione-dal-potenziale-al-caos.html'
+CHARTS={'f6_schema_comportamenti','f8_separazione','f9_zoom'}   # grafici: PNG; le catture del simulatore: JPEG
 
-def img_uri(name):
-    im=Image.open(FIG+name+'.png').convert('RGB')
+def img_uri(path):
+    path=(HERE/path).resolve(); name=path.stem
+    im=Image.open(path).convert('RGB')
     if im.width>1300: im=im.resize((1300,round(im.height*1300/im.width)),Image.LANCZOS)
     b=io.BytesIO()
     if name in CHARTS: im.save(b,'PNG',optimize=True); mime='image/png'
@@ -40,11 +36,10 @@ def md_to_html(s):
         tex=m.group(1).strip()
         return f'\n<div class="formula"><img alt="{html.escape(tex)}" src="{formula_svg(tex)}"></div>\n'
     s=re.sub(r'```latex\n(.*?)\n```',f,s,flags=re.S)
-    # immagini (segnaposto dell'esportazione)
+    # immagini: ![didascalia](percorso relativo a lezione/) -> data URI
     def g(m):
-        alt=m.group(1); name=IMG[alt]
-        return f'\n<img class="fig" alt="{html.escape(alt)}" src="{img_uri(name)}">\n'
-    s=re.sub(r'&#91;image: (.*?)\\\]',g,s)
+        return f'\n<img class="fig" alt="{html.escape(m.group(1))}" src="{img_uri(m.group(2))}">\n'
+    s=re.sub(r'!\[(.*?)\]\((.*?)\)',g,s)
     h=markdown.markdown(s,extensions=['tables'])
     h=re.sub(r'<p>\s*(<img class="fig"[^>]*>)\s*</p>',r'\1',h)
     h=re.sub(r'<p>\s*(<div class="formula">.*?</div>)\s*</p>',r'\1',h,flags=re.S)
@@ -64,13 +59,12 @@ def sections(md):
 def key(title):
     m=re.match(r'(\d)\s*·',title); return m.group(1) if m else title
 
-can_head,can=sections(open('canovaccio.md').read())
-_,rel=sections(open('relatore.md').read())
-_,stu=sections(open('studente.md').read())
+can_head,can=sections(open(HERE/'canovaccio.md').read())
+_,rel=sections(open(HERE/'relatore.md').read())
+_,stu=sections(open(HERE/'studente.md').read())
 relD={key(t):(t,b) for t,b in rel}; stuD={key(t):(t,b) for t,b in stu}
 
 byline=re.search(r'\n\n(.*?)\n',can_head).group(1)
-byline=byline.replace('Oct 10, 2026','10 ottobre 2026').replace('@','')
 
 PATH_SVG='''<svg class="path" viewBox="0 0 760 388" role="img" aria-label="Nove tappe in tre incontri: dal potenziale ai frattali" font-family="system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif" font-size="13">
 <defs><marker id="pa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#9aa5b8"/></marker></defs>
@@ -91,14 +85,7 @@ arrows+=f'<path d="M{cx(0)+200} {by(2)+28}H{cx(0)+232}V{by(0)+28}H{cx(1)+15}" ma
 path_svg=PATH_SVG.format(conts=conts,arrows=arrows,boxes=boxes)
 
 def clean_can(body):
-    body=re.sub(r'\n*Approfondisci:.*\n?','\n',body)
-    body=body.replace('**Note per il relatore** Note per il relatore:','**Note per il relatore** (pannello apribile sotto ogni tappa):')
-    body=body.replace('**Testo per lo studente** Testo per lo studente:','**Testo per lo studente** (secondo pannello apribile):')
-    body=body.replace('**Canovaccio** (questa scheda):','**Canovaccio** (sempre visibile):')
-    body=re.sub(r'&#91;embedded content:.*?\\\]','@@PATH@@',body)
-    body=body.replace('le domande sono in fondo al testo per lo studente Testo per lo studente, le soluzioni in fondo alle note per il relatore Note per il relatore.',
-                      'le domande sono nel pannello «Testo per lo studente» qui sotto, le soluzioni nel pannello «Note per il relatore».')
-    h=md_to_html(body).replace('<p>@@PATH@@</p>',path_svg)
+    h=md_to_html(body).replace('<p>@@PERCORSO@@</p>',path_svg)
     return h
 
 def panel(kind,title,body,open_=False):
@@ -123,6 +110,6 @@ for title,body in can:
 
 nav=''.join(f'<a href="#{"tappa-"+key(t) if key(t).isdigit() else ("intro" if t.startswith("Come") else "chiusura")}">{html.escape(key(t) if key(t).isdigit() else ("Intro" if t.startswith("Come") else "Fine"))}</a>' for t,_ in can)
 
-page=open('template.html').read().replace('@@BYLINE@@',html.escape(byline)).replace('@@NAV@@',nav).replace('@@SECTIONS@@','\n'.join(secs))
-open('/mnt/user-data/outputs/lezione-dal-potenziale-al-caos.html','w').write(page)
-print(len(page)//1024,'kB')
+page=open(HERE/'template.html').read().replace('@@BYLINE@@',html.escape(byline)).replace('@@NAV@@',nav).replace('@@SECTIONS@@','\n'.join(secs))
+OUT.parent.mkdir(exist_ok=True); OUT.write_text(page)
+print(OUT.relative_to(ROOT),len(page)//1024,'kB')

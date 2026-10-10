@@ -2,26 +2,36 @@
 
 Progetto didattico per la quinta liceo scientifico: un simulatore HTML (potenziale, moto di cariche, sistemi dinamici e caos) e una lezione in tre livelli (canovaccio, note per il relatore, testo per lo studente) che lo usa.
 
-## 1. File
+## 1. Struttura del progetto e comandi
 
-| File | Che cos'è |
+```
+src/                 sorgenti del simulatore (moduli JS concatenati, CSS e HTML separati)
+lezione/             canovaccio.md, relatore.md, studente.md (FONTE UNICA), template.html, build.py
+figure/              le 15 figure della lezione (PNG)
+strumenti/           build-simulatore.js, motore.js (motore fisico in Node), bz.js, sep2.js, shots.py
+test/                test della fisica (node --test)
+dist/                file compilati, non versionati: un solo HTML ciascuno, funzionano offline
+```
+
+| Comando | Effetto |
 | --- | --- |
-| `potenziale-cariche.html` | Il simulatore: un solo file HTML, JavaScript puro su canvas, nessuna dipendenza esterna, funziona offline. |
-| `lezione-dal-potenziale-al-caos.html` | La lezione: canovaccio con pannelli apribili (note relatore / testo studente), figure e formule incorporate, versione studente stampabile. Generato da `strumenti/build.py`. |
-| `figure/` | Le 15 figure della lezione (PNG): catture del simulatore e grafici calcolati. |
-| `strumenti/build.py` + `template.html` | Costruiscono la lezione HTML dai tre file Markdown. |
-| `strumenti/canovaccio.md`, `relatore.md`, `studente.md` | Testo delle tre schede, esportato dal documento su claude.ai (le immagini sono segnaposto `&#91;image: <alt>\]`). |
-| `strumenti/dyn.js` | Motore fisico minimo in Node, identico a quello del simulatore, per verifiche numeriche. |
-| `strumenti/bz.js` | Calcolo offline di una mappa dei bacini: `node bz.js x0 x1 y0 y1 N out.json`. |
-| `strumenti/sep2.js` | Separazione nel tempo tra traiettorie vicine (biliardo elettrico), per il grafico `f8_separazione.png`. |
-| `strumenti/shots.py` | Playwright: genera le catture del simulatore usate come figure. |
+| `make simulatore` | `src/` → `dist/potenziale-cariche.html` (Node, nessuna dipendenza) |
+| `make lezione` | `lezione/*.md` + `figure/` → `dist/lezione-dal-potenziale-al-caos.html` (Python) |
+| `make test` | test fisici sul motore reale del simulatore (`node --test`, nessuna dipendenza) |
+| `make tutto` | test, poi i due file |
+
+Setup Python (solo per la lezione e per `shots.py`): `python3 -m venv .venv && .venv/bin/pip install -r requirements.txt`; per `shots.py` anche `.venv/bin/playwright install chromium`.
+
+**Sorgenti del simulatore.** I moduli `src/NN-nome.js` condividono lo stesso scope (sono concatenati nell'ordine del numero e avvolti in una funzione, come nel file originale): niente `import`, quindi nessun bundler. Gli `01…05` e `09` non toccano il DOM; `strumenti/motore.js` li carica in Node con poche funzioni dell'interfaccia sostituite da no-op, così test, `bz.js` e `sep2.js` usano lo stesso codice del simulatore. Le funzioni di disegno e interfaccia stanno in `06`, `07`, `08`, `10`. Nuovo modulo = nuovo file numerato.
+
+**Lezione.** I tre `.md` sono la fonte unica; il documento su claude.ai è solo una copia e non va più riesportato. Immagini: `![didascalia](../figure/nome.png)`; formule: blocchi ```latex; il diagramma del percorso nel canovaccio è generato da `build.py` al posto del segnaposto `@@PERCORSO@@`.
 
 Versioni online (private finché non le condividi):
 
 - Simulatore pubblicato: https://claude.ai/artifact/JBUKU3S2H6ZyMqB8o5mJRk
-- Documento della lezione (tre schede, modificabile): https://claude.ai/code/artifact/b47bbfd4-6448-4ee5-8eb6-af24a4abcfdd
+- Documento della lezione (copia): https://claude.ai/code/artifact/b47bbfd4-6448-4ee5-8eb6-af24a4abcfdd
 
-Le modifiche fatte nel documento online non arrivano da sole nei file: vanno riesportate in Markdown (una scheda alla volta) e rimesse in `strumenti/`.
+Strumenti offline: `node strumenti/bz.js x0 x1 y0 y1 N out.json` (mappa dei bacini su una regione, scenario «bacini»); `node strumenti/sep2.js [out.json]` (separazione tra traiettorie vicine, per `f8_separazione.png`).
 
 ## 2. Convenzioni fisiche e numeriche
 
@@ -54,7 +64,7 @@ Notazione: carica di prova `[x0, y0, vx0, vy0]` in cm e cm/s; q₀ = 1 nC, m = 1
 | Orbita circolare | −2 nC in (0,0) | no | (5, 0, 0, 1,896) | v = 1,90 cm/s, T ≈ 16,6 s, energia costante a 3 cifre |
 | Orbite ellittiche | −2 nC in (0,0) | no | (7, 0, 0, f·1,602), f = 0,5 / 0,7 / 0,9 | pericentri 1,0 / 2,3 / 4,8 cm |
 | Rosetta | −1,5 nC in (±1,5; 0) | no | (0, 6, 0,8·v_c, 0) | orbita limitata che precede |
-| Rutherford | +4 nC in (0,0) | no | 9 cariche da (−9,5; y), y = −4…4, v = (7, 0) | distanza minima frontale 1,47 cm |
+| Rutherford | +4 nC in (0,0) | no | 9 cariche da (−9,5; y), y = −4…4, v = (7, 0) | distanza minima frontale 1,27 cm (1,47 cm è il valore se la carica partisse da lontano: il testo della lezione usa quello) |
 | Partenza da ferma | dipolo ±2 nC in (∓3; 0) | no | (−2, 2, 0, 0) | la traiettoria si stacca dalla linea di campo |
 | Deflessione | due file di 7 cariche ±1 nC a x = ∓3 | no | (−1,5; −9,5) con v_y = 14, 17, 21, 28 | deviazioni decrescenti con v |
 | Punto fisso | BOWL | viscoso γ = 0,4 | (5,2,1,1), (−6,−3,0,0), (0,6,5,2,0) | tutte al centro |
@@ -72,15 +82,14 @@ Risultati negativi utili (da non rifare):
 ## 5. Lezione
 
 - Struttura: introduzione, 9 tappe in tre incontri (A: 1–3 potenziale, B: 4–5 moto, C: 6–9 sistemi dinamici e caos), chiusura; 12 domande di verifica con soluzioni.
-- Rigenerare l'HTML: mettere `canovaccio.md`, `relatore.md`, `studente.md` e `template.html` nella stessa cartella di `build.py`, le figure in `figure/` (percorso `FIG` nello script), poi `python3 build.py`.
-- Dipendenze: Python 3 con `markdown`, `matplotlib`, `Pillow`; per le catture `playwright` (Chromium); Node per `dyn.js`, `bz.js`, `sep2.js`.
 - Le formule (blocchi ```latex) sono convertite in SVG con il mathtext di matplotlib; i comandi non supportati vengono tradotti (`\text` → `\mathrm`, `\frac` → `\dfrac`).
 
 ## 6. Cose da fare
 
-1. **Dividere il simulatore in moduli** (fisica, dinamica, bacini, disegno 2D, 3D, fasi, interfaccia) con un passaggio di build che produca ancora un unico file HTML offline.
-2. **Test automatici** della fisica con `dyn.js` o con i moduli estratti: conservazione dell'energia, periodo dell'orbita circolare, distanza minima di Rutherford, raggio del ciclo limite, esito degli scenari della tabella al punto 4.
-3. **Figure rigenerate automaticamente**: unire `shots.py`, `sep2.js` e `bz.js` in un'unica pipeline, così che modificando uno scenario si aggiornino le figure e la lezione.
-4. Tenere `build.py` e le note del relatore allineati ai numeri delle verifiche (alcune cifre sono scritte a mano nel testo).
-5. Possibili migliorie: sezione di Poincaré per l'attrattore strano; zoom interattivo sulla mappa dei bacini; scelta della coppia di variabili nello spazio delle fasi (x–vₓ o y–v_y); tema scuro.
-6. Dopo ogni modifica al simulatore, ripubblicarlo su claude.ai (artifact JBUKU3S2H6ZyMqB8o5mJRk) se si vuole aggiornare la versione online.
+Fatto: struttura a cartelle e git; simulatore modulare con compilazione a file unico; test della fisica sul motore reale (`test/fisica.test.js`: scenari del §4 tranne «rosetta», «partenza da ferma» e «deflessione», ancora senza test); lezione compilabile da `.md` locali.
+
+1. **Figure rigenerate automaticamente.** `shots.py` produce catture con nomi diversi da quelli delle figure della lezione (`f5_ellittiche`/`f5_rutherford` invece di `f5_orbite_rutherford`, `f9_bacini` invece di `f9_bacini_2d`) e non è mai stato eseguito dopo il riordino; i grafici `f6_schema_comportamenti`, `f8_separazione`, `f9_zoom` e i composti `f5_*`, `f9_bacini_2d` non hanno più lo script che li genera (restano `sep2.js` e `bz.js` per i dati). Obiettivo: un solo comando che rigenera tutte le figure.
+2. **Numeri nei testi.** Alcune cifre sono scritte a mano nei `.md`: far leggere i valori dai test. In particolare il testo del relatore (tappa 5) dà 1,47 cm per Rutherford; è giusto solo «da lontano» e va precisato che nel laboratorio la partenza a 9,5 cm dà 1,27 cm.
+3. **Collegamenti.** I `.md` puntano al simulatore su claude.ai; per una lezione tutta offline potrebbero puntare a `potenziale-cariche.html` nella stessa cartella.
+4. Possibili migliorie: sezione di Poincaré per l'attrattore strano; zoom interattivo sulla mappa dei bacini; scelta della coppia di variabili nello spazio delle fasi (x–vₓ o y–v_y); tema scuro.
+5. Se si vuole aggiornare la versione online del simulatore: `make simulatore` e ripubblicare `dist/potenziale-cariche.html` su claude.ai (artifact JBUKU3S2H6ZyMqB8o5mJRk).

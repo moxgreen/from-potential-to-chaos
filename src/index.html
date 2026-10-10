@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Laboratorio del potenziale elettrostatico</title>
+<style>
+/*@@CSS@@*/
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>Laboratorio del potenziale elettrostatico</h1>
+    <p>Dalle linee equipotenziali al moto delle cariche, fino al caos</p>
+  </header>
+
+  <div class="stagearea" id="stageArea">
+    <div class="views">
+      <article class="view" id="view2d">
+        <div class="view-head">
+          <h2>Isoipse, vista dall'alto</h2>
+          <span class="hint">Trascina per spostare · rotella su una carica per cambiare q</span>
+        </div>
+        <div class="stage" id="topStage"><canvas id="top" aria-label="Mappa delle linee equipotenziali"></canvas></div>
+        <div class="view-foot readout">
+          <span>Sonda:</span>
+          <span><i>x</i> = <span class="v" id="rx">—</span></span>
+          <span><i>y</i> = <span class="v" id="ry">—</span></span>
+          <span><i>V</i> = <span class="v" id="rv">—</span></span>
+          <span>|<i>E</i>| = <span class="v" id="re">—</span></span>
+        </div>
+      </article>
+
+      <article class="view" id="view3d">
+        <div class="view-head">
+          <h2 id="rightTitle">Superficie del potenziale in 3D</h2>
+          <div class="row">
+            <div class="seg" id="rightSeg"><button data-v="3d" class="on">Superficie 3D</button><button data-v="phase">Spazio delle fasi</button></div>
+            <span class="row" id="camTools">
+              <button class="btn" id="camReset">Vista iniziale</button>
+              <button class="btn" id="camTop">Dall'alto</button>
+              <button class="btn" id="camSpin" aria-pressed="false">Ruota</button>
+            </span>
+          </div>
+        </div>
+        <div class="stage" id="threeStage"><canvas id="three" aria-label="Grafico di destra"></canvas></div>
+        <div class="view-foot" id="rightFoot"><span>Trascina per ruotare, rotella per lo zoom. Oltre ±V<sub>max</sub> la superficie è troncata.</span></div>
+      </article>
+    </div>
+
+    <div class="simbar">
+      <div class="row">
+        <button class="btn primary" id="simPlay">Avvia</button>
+        <button class="btn" id="simReset">Ricomincia</button>
+        <div class="seg" id="speedSeg">
+          <button data-v="0.5">½×</button><button data-v="1" class="on">1×</button><button data-v="2">2×</button><button data-v="4">4×</button><button data-v="8">8×</button>
+        </div>
+        <span class="muted">t = <b id="simTime">0,0 s</b></span>
+        <span class="pill" id="dampBadge" hidden></span>
+      </div>
+      <div class="row">
+        <div class="seg" id="layoutSeg"><button data-v="both" class="on">2D + 3D</button><button data-v="2d">Solo 2D</button><button data-v="3d" id="layout3dBtn">Solo 3D</button></div>
+        <button class="btn" id="fsBtn">⛶ Schermo intero</button>
+      </div>
+    </div>
+  </div>
+
+  <aside class="side">
+    <nav class="tabs" role="tablist">
+      <button role="tab" data-tab="1" class="on" aria-selected="true"><b>1</b>Il potenziale</button>
+      <button role="tab" data-tab="2" aria-selected="false"><b>2</b>Cariche in moto</button>
+      <button role="tab" data-tab="3" aria-selected="false"><b>3</b>Sistemi dinamici e caos</button>
+    </nav>
+
+    <!-- ===================== SCHEDA 1 ===================== -->
+    <div class="tabpanel" id="tab1" role="tabpanel">
+      <section class="block">
+        <p class="lead">Disponi delle cariche puntiformi nel piano e osserva il potenziale che generano: a sinistra le isoipse (linee equipotenziali), a destra la superficie <i>V</i>(<i>x</i>, <i>y</i>).</p>
+      </section>
+      <section class="block">
+        <h3>Configurazioni</h3>
+        <div class="presets" id="presets">
+          <button class="btn" data-p="dipolo">Dipolo</button>
+          <button class="btn" data-p="uguali">Due cariche uguali</button>
+          <button class="btn" data-p="asimm">Cariche +4 e −1 nC</button>
+          <button class="btn" data-p="singola">Carica singola</button>
+          <button class="btn" data-p="quadrupolo">Quadrupolo</button>
+          <button class="btn" data-p="piani">Due file di cariche</button>
+        </div>
+      </section>
+      <section class="block">
+        <h3>Il clic sulla mappa posiziona</h3>
+        <div class="seg" id="toolSeg">
+          <button data-v="add" class="on">Nuova carica</button>
+          <button data-v="test">Carica di prova</button>
+          <button data-v="probe">Sonda</button>
+        </div>
+        <div class="grid2">
+          <label>Segno delle nuove cariche
+            <span class="seg" id="signSeg" style="align-self:flex-start">
+              <button data-v="1" class="on">+ positiva</button>
+              <button data-v="-1">− negativa</button>
+            </span>
+          </label>
+          <label>Intensità |q| (nC)<input type="number" id="newMag" min="0.5" max="10" step="0.5" value="2"></label>
+        </div>
+      </section>
+      <section class="block">
+        <h3>Carica selezionata</h3>
+        <p class="muted" id="noSel">Nessuna carica selezionata. Clicca una carica sulla mappa, oppure clicca un punto vuoto per aggiungerne una.</p>
+        <div id="selBox" hidden>
+          <div class="row between">
+            <span class="badge" id="selName">Q1</span>
+            <div class="row">
+              <button class="btn" id="flip">Inverti segno</button>
+              <button class="btn danger" id="del">Elimina</button>
+            </div>
+          </div>
+          <div class="field"><span>Carica <i>q</i></span><output id="qOut"></output></div>
+          <input type="range" id="qRange" min="-10" max="10" step="0.5">
+          <div class="grid2">
+            <label>x (cm)<input type="number" id="xNum" min="-10" max="10" step="0.1"></label>
+            <label>y (cm)<input type="number" id="yNum" min="-10" max="10" step="0.1"></label>
+          </div>
+        </div>
+      </section>
+      <section class="block">
+        <div class="row between">
+          <h3 style="margin:0">Cariche presenti <span class="muted" id="count"></span></h3>
+          <button class="btn danger" id="clearAll">Rimuovi tutte</button>
+        </div>
+        <div class="chips" id="chips"></div>
+      </section>
+      <section class="block">
+        <h3>Visualizzazione</h3>
+        <div class="field"><span>Scala dei colori ±V<sub>max</sub></span><output id="vmaxOut"></output></div>
+        <input type="range" id="vmax" min="0" max="100" step="1">
+        <div class="field"><span>Isoipse per segno</span><output id="nlevOut"></output></div>
+        <input type="range" id="nlev" min="3" max="25" step="1">
+        <p class="muted" style="margin:4px 0 0">Tra due isoipse vicine: Δ<i>V</i> = <b id="dvOut"></b></p>
+        <h4>Campo elettrico</h4>
+        <div class="seg" id="fieldSeg">
+          <button data-v="none" class="on">Nascosto</button>
+          <button data-v="lines">Linee di campo</button>
+          <button data-v="vectors">Vettori E</button>
+        </div>
+        <h4>Opzioni</h4>
+        <label class="check"><input type="checkbox" id="optFill" checked> Sfondo colorato nella mappa</label>
+        <label class="check"><input type="checkbox" id="optZero" checked> Evidenzia l'isoipsa V = 0</label>
+        <label class="check"><input type="checkbox" id="optProbe" checked> Evidenzia l'isoipsa che passa per la sonda</label>
+        <label class="check"><input type="checkbox" id="optLabels" checked> Mostra il valore delle cariche</label>
+        <label class="check"><input type="checkbox" id="optSnap" checked> Aggancia alla griglia (0,5 cm)</label>
+        <label class="check"><input type="checkbox" id="optFloor" checked> Isoipse proiettate sotto la superficie 3D</label>
+      </section>
+      <section class="block theory">
+        <h3>Il modello</h3>
+        <p>Il potenziale in un punto P è la somma dei contributi di tutte le cariche (principio di sovrapposizione):</p>
+        <div class="formula"><i>V</i>(P) = <i>k</i> Σ <span class="frac"><span><i>q</i><sub>i</sub></span><span><i>r</i><sub>i</sub></span></span>,&nbsp; <span style="font-size:15px"><i>k</i> = 8,99·10<sup>9</sup> N·m²/C²</span></div>
+        <ul>
+          <li>Tra isoipse vicine la differenza di potenziale è sempre la stessa: dove le linee sono fitte il campo è intenso.</li>
+          <li>Il campo <i>E</i> è perpendicolare alle isoipse e punta verso potenziali decrescenti; in modulo <i>E</i> ≈ Δ<i>V</i>/Δ<i>s</i>.</li>
+          <li>Spostare una carica lungo un'isoipsa non richiede lavoro: <i>W</i> = <i>q</i>(<i>V</i><sub>A</sub> − <i>V</i><sub>B</sub>) = 0.</li>
+        </ul>
+        <p class="note">Posizioni in cm, cariche in nC, potenziale in V, campo in V/m. Le cariche sono puntiformi e V è calcolato nel piano che le contiene. Vicino a una carica V tende all'infinito: per questo colori e superficie sono troncati a ±V<sub>max</sub>.</p>
+      </section>
+    </div>
+
+    <!-- ===================== SCHEDA 2 ===================== -->
+    <div class="tabpanel" id="tab2" role="tabpanel" hidden>
+      <section class="block theory">
+        <h3>Una carica che si muove nel campo</h3>
+        <p>Una piccola sfera di carica <i>q</i>₀ e massa <i>m</i> scivola senza attrito nel piano. Su di essa agisce la forza <i>F</i> = <i>q</i>₀<i>E</i>, quindi accelera con <i>a</i> = <i>q</i>₀<i>E</i>/<i>m</i>. Il moto si calcola passo dopo passo con la seconda legge della dinamica.</p>
+      </section>
+      <section class="block">
+        <h3>Traiettorie di esempio</h3>
+        <div class="tpresets" id="tpresets2">
+          <button class="tp" data-t="circolare"><b>Orbita circolare</b><span>La forza di Coulomb fa da forza centripeta, come la gravità per un pianeta.</span></button>
+          <button class="tp" data-t="ellittiche"><b>Orbite ellittiche</b><span>Stesso punto di partenza, tre velocità diverse: ellissi come nelle leggi di Keplero.</span></button>
+          <button class="tp" data-t="rosetta"><b>Rosetta</b><span>Due cariche vicine al centro: l'orbita non si chiude più e ruota lentamente.</span></button>
+          <button class="tp" data-t="rutherford"><b>Esperimento di Rutherford</b><span>Un fascio contro una carica positiva: iperboli, e qualcuna torna indietro.</span></button>
+          <button class="tp" data-t="ferma"><b>Partenza da ferma nel dipolo</b><span>La carica non segue la linea di campo tratteggiata: conta l'inerzia.</span></button>
+          <button class="tp" data-t="condensatore"><b>Deflessione tra due file di cariche</b><span>Più la carica è veloce, meno viene deviata, come nel tubo catodico.</span></button>
+        </div>
+        <p class="note">Il moto caotico è nella scheda 3.</p>
+      </section>
+      <section class="block">
+        <h3>Carica di prova</h3>
+        <button class="btn" id="toolTest">Posiziona una carica di prova</button>
+        <p class="muted" style="margin:6px 0 0">Poi clicca sulla mappa. Se trascini prima di rilasciare le dai una velocità iniziale, altrimenti parte da ferma. Avvio, pausa e velocità di riproduzione sono nella barra sotto i grafici (oppure barra spaziatrice).</p>
+        <div class="grid2">
+          <label>Carica q₀ (nC)<input type="number" id="q0" min="-5" max="5" step="0.5" value="1"></label>
+          <label>Massa m (g)<input type="number" id="mass" min="0.1" max="20" step="0.1" value="1"></label>
+        </div>
+        <label class="check" style="margin-top:10px"><input type="checkbox" id="optVF" checked> Mostra velocità e forza durante il moto</label>
+        <label class="check"><input type="checkbox" id="optFL"> Mostra la linea di campo dal punto di partenza</label>
+        <div class="row" style="margin-top:8px"><button class="btn danger" id="simClear">Rimuovi le cariche di prova</button></div>
+      </section>
+      <section class="block">
+        <h3>Condizioni iniziali ed energia</h3>
+        <p class="muted" id="noTest">Seleziona una carica di prova sulla mappa per vederne i dati.</p>
+        <div id="testBox" hidden>
+          <div class="row between">
+            <span class="row" style="gap:10px"><span class="badge" id="testName">P1</span><span class="muted" id="testStatus"></span></span>
+            <button class="btn danger" id="testDel">Elimina</button>
+          </div>
+          <div class="grid2">
+            <label>x₀ (cm)<input type="number" id="tx" min="-10" max="10" step="0.1"></label>
+            <label>y₀ (cm)<input type="number" id="ty" min="-10" max="10" step="0.1"></label>
+            <label>Velocità iniziale v₀ (cm/s)<input type="number" id="tv" min="0" max="60" step="0.1"></label>
+            <label>Direzione (gradi dall'asse x)<input type="number" id="ta" min="-360" max="360" step="5"></label>
+          </div>
+          <p class="muted" style="margin:8px 0 0">Quantità di moto iniziale <i>p</i>₀ = <i>m</i><i>v</i>₀ = <b id="p0Out"></b></p>
+          <table class="energy">
+            <tr><td>Velocità <i>v</i></td><td id="eV"></td></tr>
+            <tr><td>Energia cinetica <i>K</i> = ½<i>mv</i>²</td><td id="eK"></td></tr>
+            <tr><td>Energia potenziale <i>U</i> = <i>q</i>₀<i>V</i></td><td id="eU"></td></tr>
+            <tr class="tot"><td>Energia totale <i>K</i> + <i>U</i></td><td id="eE"></td></tr>
+          </table>
+          <p class="note" id="energyNote" hidden>Con l'attrito attivo l'energia totale non si conserva.</p>
+        </div>
+      </section>
+      <section class="block theory">
+        <h3>Cosa osservare</h3>
+        <ul>
+          <li>La traiettoria non coincide con la linea di campo: la forza dice come cambia la velocità, non dove va la carica.</li>
+          <li>Senza attrito l'energia totale <i>K</i> + <i>U</i> resta costante: quando la carica va verso energie potenziali più basse guadagna energia cinetica.</li>
+          <li>Per <i>q</i>₀ &gt; 0 il moto somiglia a quello di una pallina che rotola sulla superficie 3D; per <i>q</i>₀ &lt; 0 la superficie andrebbe capovolta.</li>
+        </ul>
+      </section>
+    </div>
+
+    <!-- ===================== SCHEDA 3 ===================== -->
+    <div class="tabpanel" id="tab3" role="tabpanel" hidden>
+      <section class="block theory">
+        <h3>Che cos'è un sistema dinamico</h3>
+        <p>In ogni istante lo <b>stato</b> della carica di prova è dato da quattro numeri: la posizione (<i>x</i>, <i>y</i>) e la velocità (<i>v<sub>x</sub></i>, <i>v<sub>y</sub></i>). Le leggi del moto stabiliscono come lo stato cambia nel tempo: questo è un <b>sistema dinamico</b>, e lo stesso stato iniziale porta sempre allo stesso futuro.</p>
+        <p>L'insieme di tutti gli stati possibili è lo <b>spazio delle fasi</b>, qui a quattro dimensioni. Il grafico di destra può mostrarne una proiezione: la posizione <i>x</i> in orizzontale e la velocità <i>v<sub>x</sub></i> in verticale.</p>
+        <button class="btn" id="showPhase">Mostra lo spazio delle fasi</button>
+      </section>
+
+      <section class="block">
+        <h3>Attrito e motore</h3>
+        <div class="seg" id="dampSeg">
+          <button data-v="none" class="on">Nessuno</button>
+          <button data-v="visc">Viscoso</button>
+          <button data-v="active">Attivo</button>
+        </div>
+        <p class="muted" id="dampHelp" style="margin:8px 0 0"></p>
+        <div id="gammaBox">
+          <div class="field"><span>Coefficiente γ</span><output id="gOut"></output></div>
+          <input type="range" id="gamma" min="0.05" max="1.5" step="0.05">
+        </div>
+        <div id="vstarBox">
+          <div class="field"><span>Velocità di regime v*</span><output id="vsOut"></output></div>
+          <input type="range" id="vstar" min="0.5" max="5" step="0.1">
+        </div>
+      </section>
+
+      <section class="block concept theory">
+        <h3><span class="num">1</span>Punto fisso</h3>
+        <p>È uno stato in cui il sistema resta fermo per sempre: forza totale nulla e velocità zero. Se le traiettorie vicine vi ritornano è <b>stabile</b>, ed è il più semplice degli <b>attrattori</b>.</p>
+        <p>Qui la carica di prova positiva sta dentro un anello di cariche positive: al centro la forza si annulla. Con l'attrito viscoso ci arriva da qualunque punto; nello spazio delle fasi la traiettoria è una spirale verso un punto.</p>
+        <button class="btn try" data-s="puntofisso">Prova: il punto fisso</button>
+        <p class="note">Curiosità: nello spazio a tre dimensioni nessuna disposizione di cariche ha un equilibrio stabile (teorema di Earnshaw). Qui funziona perché la carica è costretta a restare nel piano.</p>
+      </section>
+
+      <section class="block concept theory">
+        <h3><span class="num">2</span>Bacino di attrazione</h3>
+        <p>Quando gli attrattori sono più di uno, ogni stato iniziale finisce su uno di essi. Gli stati che portano allo stesso attrattore formano il suo <b>bacino di attrazione</b>.</p>
+        <p>Qui tre cariche negative attirano la carica di prova e l'attrito la fa cadere su una delle tre. La mappa colora ogni punto di partenza (da fermo) secondo la carica su cui finisce: vicino alle cariche i bacini sono regioni semplici, lontano i confini si intrecciano in modo frattale, come nel pendolo magnetico.</p>
+        <button class="btn try" data-s="bacini">Prova: tre attrattori</button>
+        <h4>Mappa dei bacini</h4>
+        <div class="row">
+          <button class="btn" id="basinGo">Calcola la mappa</button>
+          <div class="seg" id="basinRes"><button data-v="60">Rapida</button><button data-v="100" class="on">Media</button><button data-v="150">Fine</button></div>
+        </div>
+        <div class="progress"><div id="basinBar"></div></div>
+        <p class="muted" id="basinStatus" style="margin:6px 0 0">Vale per le cariche e l'attrito attuali; serve l'attrito viscoso.</p>
+        <label class="check"><input type="checkbox" id="optBasin" checked> Mostra la mappa sulle isoipse</label>
+        <div class="legend" id="basinLegend"></div>
+      </section>
+
+      <section class="block concept theory">
+        <h3><span class="num">3</span>Ciclo limite</h3>
+        <p>È un'orbita chiusa che attira le traiettorie vicine: partendo da dentro o da fuori, la carica finisce sempre sullo stesso giro. Nello spazio delle fasi è una <b>curva chiusa</b> isolata.</p>
+        <p>Serve un sistema che riceva e ceda energia. Con l'attrito «attivo» la carica viene spinta quando è più lenta di <i>v</i>* e frenata quando è più veloce, finché trova l'orbita circolare percorsa esattamente a velocità <i>v</i>*.</p>
+        <button class="btn try" data-s="ciclo">Prova: il ciclo limite</button>
+      </section>
+
+      <section class="block concept theory">
+        <h3><span class="num">4</span>Caos senza attrito</h3>
+        <p>Senza attrito l'energia si conserva e <b>non esistono attrattori</b>: un gruppo di stati occupa nello spazio delle fasi un volume che resta costante (teorema di Liouville). Il moto però può essere <b>caotico</b>.</p>
+        <p>Nel «biliardo elettrico» due cariche che partono a 0,2 mm di distanza dopo qualche decina di secondi seguono traiettorie del tutto diverse: è la <b>sensibilità alle condizioni iniziali</b>. La terza carica, un po' più lenta, resta invece su un moto regolare: nello stesso sistema convivono ordine e caos.</p>
+        <button class="btn try" data-s="caos">Prova: il biliardo elettrico</button>
+        <p class="note">Perché servono almeno tre cariche al centro? Il moto attorno a due cariche fisse è il «problema dei due centri» di Eulero: si risolve esattamente e non è mai caotico. Due partenze vicine si allontanano solo lentamente, in proporzione al tempo e non in modo esponenziale.</p>
+      </section>
+
+      <section class="block concept theory">
+        <h3><span class="num">5</span>Attrattore strano</h3>
+        <p>Con attrito e motore insieme il moto può essere caotico e allo stesso tempo attratto da un insieme limitato: un <b>attrattore strano</b>, come quello «a farfalla» di Lorenz.</p>
+        <p>Da partenze molto diverse la carica finisce sempre nella stessa regione intricata dello spazio delle fasi, ma due partenze vicine si separano in fretta e il moto non si ripete mai. Lascia correre la simulazione: la forma dell'attrattore emerge dalla traccia.</p>
+        <button class="btn try" data-s="attrattore">Prova: l'attrattore strano</button>
+        <p class="note">La forma non è una farfalla: quella di Lorenz nasce da un modello di convezione nell'atmosfera, mentre qui l'attrattore riflette la simmetria delle tre cariche. Le proprietà, però, sono le stesse.</p>
+      </section>
+    </div>
+  </aside>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(() => {
+'use strict';
+/*@@JS@@*/
+})();
+</script>
+</body>
+</html>

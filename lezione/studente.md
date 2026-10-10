@@ -6,7 +6,7 @@ Questo testo accompagna il Laboratorio del potenziale elettrostatico: leggi una 
 
 Il laboratorio è una pagina web che calcola il potenziale e il moto delle cariche mentre le sposti. A sinistra trovi la mappa vista dall'alto, a destra un secondo grafico (la superficie 3D oppure lo spazio delle fasi), sotto una barra di comandi e sulla destra tre schede che corrispondono alle parti di questo testo.
 
-&#91;image: L'interfaccia del laboratorio\]
+![L'interfaccia del laboratorio](../figure/f0_interfaccia.png)
 
 *Figura 0 – Il laboratorio con il dipolo: mappa delle isoipse a sinistra, superficie 3D al centro, schede dei comandi a destra.*
 
@@ -48,7 +48,7 @@ Il potenziale dice quanta energia avrebbe ogni coulomb di carica messo in quel p
 
 **Più cariche: si sommano numeri.** Il potenziale prodotto da più cariche è la somma dei potenziali di ciascuna (principio di sovrapposizione). Poiché V è un numero e non un vettore, la somma è molto più semplice di quella dei campi.
 
-&#91;image: Una carica singola e la sonda\]
+![Una carica singola e la sonda](../figure/f1_singola.png)
 
 *Figura 1 – Una carica di +2 nC. La sonda, a 2 cm dalla carica, legge V ≈ +899 V.*
 
@@ -62,7 +62,7 @@ Il potenziale assegna un numero a ogni punto del piano. Ci sono due modi per «v
 
 **La superficie.** Se usiamo V come altezza otteniamo un paesaggio: ogni carica positiva diventa un picco, ogni carica negativa un pozzo, e lontano dalle cariche il terreno è una pianura a quota zero.
 
-&#91;image: Il dipolo in due e tre dimensioni\]
+![Il dipolo in due e tre dimensioni](../figure/f2_dipolo.png)
 
 *Figura 2 – Il dipolo (+2 nC a sinistra, −2 nC a destra). A sinistra le isoipse: quella evidenziata passa per la sonda, dove V ≈ +122 V. A destra la stessa informazione come superficie: un picco e un pozzo.*
 
@@ -94,7 +94,7 @@ Isoipse fitte significano campo intenso, isoipse rade campo debole. Sulla superf
 
 **Le linee di campo.** Sono linee che in ogni punto hanno la direzione del campo. Escono dalle cariche positive ed entrano in quelle negative; nel laboratorio il loro numero è proporzionale al valore della carica.
 
-&#91;image: Linee di campo e isoipse del dipolo\]
+![Linee di campo e isoipse del dipolo](../figure/f3_linee.png)
 
 *Figura 3 – Linee di campo (in grigio scuro, con la freccia) e isoipse (colorate) del dipolo: si incontrano sempre ad angolo retto.*
 
@@ -126,7 +126,7 @@ Quando una carica positiva va verso potenziali più bassi, perde energia potenzi
 
 **La traiettoria non è la linea di campo.** La forza dice come cambia la velocità, non dove va la carica. Lungo una curva la carica avrebbe bisogno di una forza verso l'interno della curva (la forza centripeta), ma la forza elettrica è diretta lungo la linea di campo, non verso il suo interno. Partendo da ferma, la carica imbocca la linea di campo, poi l'inerzia la porta fuori.
 
-&#91;image: Traiettoria e linea di campo nel dipolo\]
+![Traiettoria e linea di campo nel dipolo](../figure/f4_ferma.png)
 
 *Figura 4 – Una carica partita da ferma nel dipolo. La linea punteggiata è la linea di campo che passa per il punto di partenza; la traccia scura è la traiettoria vera, che se ne allontana. Le frecce mostrano velocità (scura) e forza (rosa).*
 
@@ -150,7 +150,7 @@ k\,\frac{|q\,Q|}{r^2} = \frac{m v^2}{r} \quad\Rightarrow\quad v = \sqrt{\frac{k\
 
 **Diffusione di Rutherford.** Se le cariche si respingono le traiettorie sono iperboli. Nel 1911 Rutherford, osservando che alcune particelle alfa lanciate contro una sottile lamina d'oro tornavano indietro, capì che la carica positiva dell'atomo è concentrata in un nucleo piccolissimo.
 
-&#91;image: Orbite ellittiche e diffusione di Rutherford\]
+![Orbite ellittiche e diffusione di Rutherford](../figure/f5_orbite_rutherford.png)
 
 *Figura 5 – A sinistra: tre orbite ellittiche che partono dallo stesso punto con velocità diverse. A destra: un fascio di cariche contro una carica positiva di +4 nC; quella lanciata dritta al centro torna indietro.*
 
@@ -170,13 +170,13 @@ Fin qui abbiamo seguito una traiettoria alla volta. Ora cambiamo punto di vista 
 
 **Un moto periodico è una curva chiusa.** Nell'orbita circolare la carica ripassa sempre per gli stessi stati: nello spazio delle fasi percorre un'ellisse, sempre la stessa.
 
-&#91;image: Orbita circolare nello spazio delle fasi\]
+![Orbita circolare nello spazio delle fasi](../figure/f6_circolare_fasi.png)
 
 *Figura 6 – L'orbita circolare: a sinistra la traiettoria nel piano, a destra la stessa orbita nello spazio delle fasi (x, vₓ), un'ellisse percorsa sempre uguale.*
 
 Nelle prossime sezioni incontreremo quattro comportamenti tipici. La figura seguente li riassume in modo schematico: ogni riquadro è uno spazio delle fasi.
 
-&#91;image: Quattro comportamenti a lungo termine\]
+![Quattro comportamenti a lungo termine](../figure/f6_schema_comportamenti.png)
 
 *Figura 7 – Schemi qualitativi. Senza attrito: una curva chiusa per ogni energia. Con attrito: tutto converge in un punto. Con «motore» e attrito: tutto converge su una curva chiusa (ciclo limite). Infine l'attrattore strano di Lorenz.*
 
@@ -190,13 +190,13 @@ Senza attrito un sistema «ricorda» per sempre come è partito: la sua energia 
 
 **Il punto fisso.** Mettiamo la carica di prova positiva dentro un anello di cariche positive: al centro le spinte si bilanciano e la forza è nulla. Con l'attrito, da qualunque punto parta, la carica finisce ferma al centro. Nello spazio delle fasi lo stato «carica ferma al centro» è un punto, e le traiettorie vi arrivano a spirale: è un **punto fisso stabile**.
 
-&#91;image: Il punto fisso\]
+![Il punto fisso](../figure/f7_puntofisso.png)
 
 *Figura 8 – Tre cariche di prova partite da punti diversi dentro l'anello. A destra, nello spazio delle fasi, tre spirali che finiscono nello stesso punto.*
 
 **Il ciclo limite.** Ora sostituiamo l'attrito con un «motore»: una forza che spinge la carica quando è più lenta di una velocità v\* e la frena quando è più veloce. Il sistema riceve energia quando ne ha poca e la cede quando ne ha troppa. Risultato: partendo da dentro o da fuori, la carica finisce sempre sullo stesso giro, un cerchio di circa 3,1 cm di raggio percorso esattamente a velocità v\*. Questa orbita isolata che attira le altre è un **ciclo limite**.
 
-&#91;image: Il ciclo limite\]
+![Il ciclo limite](../figure/f7_ciclo.png)
 
 *Figura 9 – Tre partenze diverse, una vicino al centro e due lontane: nello spazio delle fasi tutte le curve si avvolgono sulla stessa curva chiusa.*
 
@@ -214,13 +214,13 @@ Un sistema dinamico è deterministico: lo stesso stato iniziale dà sempre lo st
 
 **Sensibilità alle condizioni iniziali.** Lanciamo nel biliardo due cariche che partono a 0,2 mm di distanza, con la stessa velocità. Per un po' viaggiano appaiate, poi le loro strade si separano del tutto.
 
-&#91;image: Il biliardo elettrico\]
+![Il biliardo elettrico](../figure/f8_biliardo.png)
 
 *Figura 10 – Il biliardo elettrico: P1 e P2 partono quasi dallo stesso punto e finiscono su traiettorie diversissime; P3, un po' più lenta, resta su un moto ordinato.*
 
 Il grafico seguente misura la distanza tra due cariche partite a solo 10⁻⁶ cm l'una dall'altra. La scala verticale è logaritmica: ogni tacca vale dieci volte la precedente.
 
-&#91;image: Crescita della distanza tra due traiettorie vicine\]
+![Crescita della distanza tra due traiettorie vicine](../figure/f8_separazione.png)
 
 *Figura 11 – In rosso, due partenze nella zona caotica: dopo circa 40 s la distanza cresce in modo esponenziale e in meno di 20 s si moltiplica per più di 100 000. In blu, due partenze nella zona regolare: la distanza resta piccolissima.*
 
@@ -230,7 +230,7 @@ Quando l'errore cresce in modo esponenziale, migliorare la misura serve poco: mi
 
 **L'attrattore strano.** Aggiungiamo al biliardo il «motore» della sezione 7. Ora succedono due cose insieme: da qualunque punto parta, la carica finisce sempre nella stessa regione dello spazio delle fasi (c'è un attrattore), ma su questa regione il moto è caotico e non si ripete mai. Un attrattore così, intricato e caotico, si chiama **attrattore strano**. Il più famoso è quello scoperto da Edward Lorenz nel 1963 studiando un modello dell'atmosfera, a forma di farfalla (figura 7).
 
-&#91;image: L'attrattore strano del laboratorio\]
+![L'attrattore strano del laboratorio](../figure/f8_attrattore.png)
 
 *Figura 12 – Dopo circa 230 s simulati: a sinistra le traiettorie nel piano, a destra lo spazio delle fasi riempito da una struttura intricata ma limitata.*
 
@@ -246,13 +246,13 @@ Ci sono sistemi in cui ogni moto finisce in modo semplice, eppure è impossibile
 
 **Il bacino di attrazione.** L'insieme dei punti di partenza che portano allo stesso attrattore si chiama **bacino di attrazione**. Per disegnarlo il laboratorio fa partire una carica da ognuno di 10 000 punti (o 22 500 nella versione «Fine»), segue ogni moto fino alla fine e colora il punto di partenza con il colore della carica su cui la carica di prova è caduta.
 
-&#91;image: La mappa dei bacini nel laboratorio\]
+![La mappa dei bacini nel laboratorio](../figure/f9_bacini_2d.png)
 
 *Figura 13 – Mappa dei bacini (150 × 150 partenze). Ogni colore è l'insieme dei punti di partenza che finiscono sulla stessa carica negativa.*
 
 Guarda la mappa: vicino a ogni carica c'è una zona grande di un solo colore, dove il destino è sicuro. Più lontano i tre colori si alternano in strisce sottili. Ingrandendo un pezzo di confine, le strisce non diventano mai lisce: compaiono strisce sempre più sottili, e spesso tra due strisce se ne infila una del terzo colore.
 
-&#91;image: Ingrandimento di un confine tra bacini\]
+![Ingrandimento di un confine tra bacini](../figure/f9_zoom.png)
 
 *Figura 14 – Un quadrato di 2 × 2 cm vicino all'anello, ricalcolato con 32 400 partenze: il confine è formato da strisce sempre più fini. È un frattale.*
 
