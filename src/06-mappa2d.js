@@ -98,7 +98,8 @@ function drawTestsAbove(ctx){
         const sx = toSX(p.x), sy = toSY(p.y), len = Math.hypot(p.vx, p.vy)*VS;
         if (len > 0.05){ const f = Math.min(len, 7)/len; drawArrow(ctx, sx, sy, sx + p.vx*VS*f*ppc, sy - p.vy*VS*f*ppc, col, 2.2); }
         elecAccel(p.x, p.y); const a = Math.hypot(_ax, _ay);
-        if (a > 1e-6){ const fl = Math.min(5, 0.9*Math.sqrt(a)); drawArrow(ctx, sx, sy, sx + _ax/a*fl*ppc, sy - _ay/a*fl*ppc, FCOL, 2.2); }
+        // la freccia parte dal bordo della pallina (≈ 16 px), altrimenti con forze deboli resta nascosta sotto di essa
+        if (a > 1e-6){ const fl = 16 + Math.min(5, 2.5*Math.sqrt(a))*ppc; drawArrow(ctx, sx, sy, sx + _ax/a*fl, sy - _ay/a*fl, FCOL, 2.2); }
       }
     } else {
       const v = Math.hypot(p.vx0, p.vy0), sx = toSX(p.x0), sy = toSY(p.y0);
