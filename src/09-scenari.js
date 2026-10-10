@@ -20,7 +20,11 @@ const SCENARI = {
   ferma:        { src: [[-3, 0, 2], [3, 0, -2]], speed: 1, fl: true, tests: [[-2, 2, 0, 0]] },
   condensatore: { src: PRESETS.piani, speed: 0.5, tests: [14, 17, 21, 28].map(v => [-1.5, -9.5, 0, v]) },
   puntofisso:   { src: BOWL, damp: 'visc', gamma: 0.4, speed: 2, scale: [8000, 25], right: 'phase', tests: [[5, 2, 1, 1], [-6, -3, 0, 0], [0, 6.5, 2, 0]] },
-  bacini:       { src: [...BOWL, ...tri(3, -1)], damp: 'visc', gamma: 0.2, speed: 2, scale: [8000, 25], basins: true, tests: [[-5, 5, 0, 0], [5.2, 4.6, 0, 0], [0, -6.5, 0, 0], [6.5, -2.2, 0, 0]] },
+  // Nessuna carica di prova e nessuna mappa all'avvio: prima le prove a mano e la «scommessa» sui punti sfida.
+  // Punti sfida, nell'ordine: ovvi (cade sulla più vicina), ingannevoli (finisce su una carica lontana),
+  // equilibrio instabile al centro, confine (due partenze vicine, due esiti). Esiti verificati in test/fisica.test.js.
+  bacini:       { src: [...BOWL, ...tri(3, -1)], damp: 'visc', gamma: 0.2, speed: 2, scale: [8000, 25], clickLaunch: true, tests: [],
+                  challenges: [[0, 5.5], [-5, -2.5], [5, -2.5], [-1.5, -6], [-4.5, 3.5], [4.5, 3.5], [0, 0], [0.5, 0], [-0.5, 0]] },
   ciclo:        { src: BOWL, damp: 'active', gamma: 0.6, vstar: 2.0, speed: 4, scale: [8000, 25], right: 'phase', tests: [[0.5, 0, 0, 0.3], [6.5, 0, 0, 1], [-6, 0, 0, -1.5]] },
   caos:         { src: [...BOWL, ...tri(2.2, 1.5)], speed: 4, scale: [8000, 25], right: 'phase', tests: [[0.3, -5.5, 3.5, 0.4], [0.3, -5.48, 3.5, 0.4], [0.3, -5.5, 3.0, 0.4]] },
   attrattore:   { src: [...BOWL, ...tri(3, 1.5)], damp: 'active', gamma: 0.5, vstar: 2.5, speed: 8, scale: [8000, 25], right: 'phase', tests: [[0.3, -5.5, 2.5, 0.4], [0.3, -5.48, 2.5, 0.4], [5, 4, 0, -1]] }

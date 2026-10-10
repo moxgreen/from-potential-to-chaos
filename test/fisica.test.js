@@ -102,8 +102,78 @@ test('bacini: tre bacini, uno per ciascuna carica negativa interna', () => {
     caricaScenario('bacini'); const N = 20, cell = 2*L/N, n = {};
     for (let j = 0; j < N; j++) for (let i = 0; i < N; i++){
       const k = basinClassify(-L + (i + .5)*cell, L - (j + .5)*cell); n[k] = (n[k] || 0) + 1; }
-    ({ n, keys: basin.keys.map(k => k.idx), indecisi: n[-2] || 0 })`);
+    ({ n, keys: attractors.map(k => k.idx), indecisi: n[-2] || 0 })`);
   assert.deepEqual(Array.from(r.keys).sort((a, b) => a - b), [16, 17, 18]);
   assert.equal(r.indecisi, 0);
   for (const k of [0, 1, 2]) assert.ok(r.n[k] > 30, `bacino ${k}: ${r.n[k]} celle`);
+});
+
+// Punti sfida della «scommessa» (SCENARI.bacini.challenges): A = Q17 in alto, B = Q18 in basso a sinistra, C = Q19 in basso a destra.
+const SFIDE = ['A', 'B', 'C', 'A', 'C', 'B', 'eq', 'C', 'B'];
+const esito = `(k => k < 0 ? String(k) : attractors[k].kind === 'eq' ? 'eq' : attractors[k].letter)`;
+
+test('scommessa: esito di ogni punto sfida con la mappa (basinClassify)', () => {
+  const r = nuovo()(`caricaScenario('bacini'); SCENARI.bacini.challenges.map(([x, y]) => ${esito}(basinClassify(x, y)))`);
+  assert.deepEqual(Array.from(r), SFIDE);
+});
+
+test('scommessa: la prova a mano (advance) dà lo stesso esito, con fotogrammi di durata diversa', () => {
+  for (const dt of [1/60, 0.05, 0.1]){
+    const r = nuovo()(`
+      caricaScenario('bacini'); tests = [];
+      for (const [x, y] of SCENARI.bacini.challenges) addTest(x, y, 0, 0);
+      integra(30, ${dt});
+      ({ esiti: tests.map(p => p.end == null ? p.status : ${esito}(p.end)), punti: marks.length })`);
+    assert.deepEqual(Array.from(r.esiti), SFIDE, `dt = ${dt}`);
+    assert.equal(r.punti, SFIDE.length, 'un punto colorato per ogni partenza');
+  }
+});
+
+test('scommessa: i punti ingannevoli non dipendono dalla precisione del clic (±0,3 cm)', () => {
+  const r = nuovo()(`
+    caricaScenario('bacini');
+    [3, 4, 5].map(n => { const [x, y] = SCENARI.bacini.challenges[n]; const out = new Set();
+      for (let a = 0; a < 8; a++) out.add(${esito}(basinClassify(x + 0.3*Math.cos(a*Math.PI/4), y + 0.3*Math.sin(a*Math.PI/4))));
+      return [...out]; })`);
+  assert.equal(JSON.stringify(r), JSON.stringify([['A'], ['C'], ['B']]));
+});
+
+test('attrattori: stesso colore e stessa lettera per prove a mano e mappa, in qualunque ordine', () => {
+  const r = nuovo()(`
+    caricaScenario('bacini'); tests = []; addTest(5, -2.5, 0, 0); integra(5, 0.05);    // prima prova: C
+    const prima = attractors.map(a => [a.letter, a.col]);
+    const kA = basinClassify(0, 5.5), kB = basinClassify(-5, -2.5);
+    ({ prima, A: [attractors[kA].letter, attractors[kA].col], B: [attractors[kB].letter, attractors[kB].col], BCOL })`);
+  const J = JSON.stringify;
+  assert.equal(J(r.prima), J([['C', r.BCOL[2]]]));
+  assert.equal(J(r.A), J(['A', r.BCOL[0]]));
+  assert.equal(J(r.B), J(['B', r.BCOL[1]]));
+});
+
+test('prove a mano: nessun punto colorato senza attrito viscoso o con velocità iniziale', () => {
+  const r = nuovo()(`
+    caricaScenario('bacini'); tests = []; addTest(4, 4, 1, 0); integra(20, 0.05);
+    const conV = marks.length; sim.damp = 'none'; tests = []; addTest(5, -2.5, 0, 0); integra(5, 0.05);
+    ({ conV, senzaAttrito: marks.length })`);
+  assert.equal(r.conV, 0);
+  assert.equal(r.senzaAttrito, 0);
+});
+
+test('zoom: potenziale e mappa dei bacini calcolati sulla finestra', () => {
+  const r = nuovo()(`
+    caricaScenario('bacini');
+    const w = { cx: -4.5, cy: 3.5, h: 0.5 }, N = 10, g = new Float64Array(N*N);
+    fillGrid(g, N, w);
+    const errV = Math.abs(g[3*N + 7] - potential(w.cx - w.h + 7*2*w.h/(N - 1), w.cy - w.h + 3*2*w.h/(N - 1)));
+    // basinWork su una finestra, senza DOM: riga 0 = bordo alto
+    basin.N = N; basin.win = w; basin.data = new Int16Array(N*N); basin.row = 0; basin.n = []; basin.undecided = 0;
+    basin.img = { data: new Uint8ClampedArray(N*N*4) }; basin.cv = { getContext: () => ({ putImageData(){} }) };
+    basin.active = true; basinWork(1e9);
+    const cell = 2*w.h/N, ok = [[0, 0], [9, 0], [0, 9], [4, 6]].every(([i, j]) =>
+      basin.data[j*N + i] === basinClassify(w.cx - w.h + (i + .5)*cell, w.cy + w.h - (j + .5)*cell));
+    ({ errV, ok, fatto: !basin.active, tutteC: Array.from(basin.data).every(k => attractors[k].letter === 'C') })`);
+  assert.ok(r.errV < 1e-9, `errore sul potenziale ${r.errV}`);
+  assert.ok(r.ok, 'celle della finestra = classificazione diretta');
+  assert.ok(r.fatto);
+  assert.ok(r.tutteC, 'attorno al punto sfida 5 tutto il riquadro di 1 cm finisce su C');
 });

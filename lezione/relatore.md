@@ -178,6 +178,19 @@ Qui l'imprevedibilità non sta nel moto, che finisce sempre fermo su una carica,
 
 **Come si costruisce la mappa.** Il piano è diviso in N × N quadretti (60, 100 o 150 per lato). Da ciascuno la carica parte da ferma, con le stesse equazioni della simulazione, finché arriva a 0,3 cm da una carica sorgente. Il quadretto prende il colore di quella carica; se dopo 200 s non si è fermata diventa grigio, se esce dall'anello resta trasparente. Con N = 100 sono 10 000 simulazioni, circa 10 secondi.
 
+**La scommessa, prima della mappa.** Lo scenario parte senza mappa e senza cariche di prova, con «un clic = una prova» attivo: ogni clic lancia una carica da ferma e, quando arriva, il punto di partenza resta colorato come la carica su cui è finita. Dopo qualche prova libera si passa ai punti sfida nell'ordine. Esiti verificati con il motore del laboratorio (anche nei test automatici):
+
+| Punto | Partenza (cm) | Esito | Che cosa far notare |
+| --- | --- | --- | --- |
+| 1, 2, 3 | (0; 5,5), (−5; −2,5), (5; −2,5) | A, B, C | ovvi: cade sulla carica più vicina in circa 1 s |
+| 4 | (−1,5; −6) | A | è a 4,6 cm da B e C e a 9,1 cm da A, ma risale tra B e C e finisce su A |
+| 5 | (−4,5; 3,5) | C | A è a 4,5 cm, eppure finisce su C, dall'altra parte, a 8,7 cm |
+| 6 | (4,5; 3,5) | B | speculare del 5: conferma che non è un caso |
+| 7 | (0; 0) | resta ferma | forze nulle per simmetria: equilibrio, ma instabile |
+| 8, 9 | (0,5; 0), (−0,5; 0) | C, B | a 1 cm l'una dall'altra, finiscono su cariche diverse |
+
+I punti 4 e 5 non dipendono dalla precisione del clic: spostandoli di 3 mm in qualunque direzione l'esito non cambia. Sono «ingannevoli» perché la forza non punta verso la carica più vicina: è la somma di tutte, compreso l'anello, che spinge verso il centro. Nel punto 4 le attrazioni di B e C sono quasi simmetriche e si compensano; la carica accelera verso il centro e per inerzia lo supera, finendo su A. La domanda da far discutere: perché la carica non sceglie la più vicina? La risposta (forza totale e inerzia) è la stessa della tappa 4: la traiettoria non segue la linea di campo. I punti 7–9 preparano il frattale: vicino al centro un piccolo spostamento cambia il destino.
+
 **Il pendolo magnetico elettrostatico.** L'anello di sedici cariche da +3 nC fa da forza di richiamo, come la gravità per un pendolo; le tre cariche negative fanno da magneti; l'attrito viscoso (γ = 0,2 s⁻¹) fa da resistenza dell'aria.
 
 **Che cosa far notare**
@@ -192,7 +205,9 @@ Qui l'imprevedibilità non sta nel moto, che finisce sempre fermo su una carica,
 - Proprietà di Wada: in sistemi di questo tipo (come il pendolo magnetico) si osserva numericamente che ogni punto di confine tocca tutti e tre i bacini insieme.
 - Collegamento matematico: anche il metodo di Newton per risolvere z³ = 1 ha tre bacini con confini frattali. Fu Cayley, nel 1879, a porre il problema; la risposta arrivò con gli insiemi di Julia.
 
-**Limiti dello strumento.** La risoluzione massima è 150 × 150 e il laboratorio non ingrandisce: per mostrare l'autosomiglianza il testo per lo studente include un ingrandimento calcolato fuori dal laboratorio, con lo stesso modello.
+**Zoom sul confine.** Con «Ingrandisci un riquadro» si trascina un quadrato sulla mappa (un clic semplice ingrandisce ×2); se la mappa è visibile si ricalcola da sola nella nuova finestra (altrimenti «Calcola la mappa qui»), sempre con 60, 100 o 150 partenze per lato, quindi con celle più piccole. Le mappe già calcolate restano in memoria: «Indietro» le ritrova subito. Un buon punto di partenza è la zona in alto a sinistra, tra (−6,5; 2,5) e (−4,5; 4,5): a ingrandimento ×10 compaiono fasce dei tre colori annidate, che si ripetono ingrandendo ancora un confine. «Indietro» (o Esc) torna allo zoom precedente, «Tutta la mappa» alla vista intera.
+
+**Limiti dello strumento.** La risoluzione massima è 150 × 150 partenze per finestra. Lo zoom si ferma a ×200 (finestra di 1 mm, celle da 7–17 µm): più in basso il risultato dipende dal passo di integrazione e dalla distanza a cui si considera «arrivata» la carica (0,3 cm), quindi non è più affidabile. Le prove a mano e la mappa usano lo stesso integratore ma con passi un po' diversi: in un punto proprio sul confine la prova e la mappa possono dare colori diversi, ed è un buon esempio della sensibilità di cui si parla.
 
 ## Soluzioni delle domande di verifica
 
@@ -210,3 +225,4 @@ La numerazione è quella della sezione «Mettiti alla prova» del testo per lo s
 10. No. L'errore cresce come e^(λt): dividere l'errore iniziale per 10 aggiunge solo ln(10)/λ al tempo di previsione, non lo moltiplica per 10.
 11. Vicino al confine i bacini sono intrecciati a ogni scala: qualunque errore, per quanto piccolo, sulla posizione iniziale può cadere in un bacino diverso.
 12. Domanda aperta: con γ minore la carica compie più giri prima di fermarsi e i confini diventano più intricati; con γ maggiore la mappa si semplifica e i bacini si avvicinano alle «zone di vicinanza» delle tre cariche.
+13. La forza non punta verso la carica più vicina: è la somma delle forze di tutte le cariche, compreso l'anello che spinge verso il centro. Da (−1,5; −6) le attrazioni di B e C sono quasi simmetriche e si compensano in parte; la carica accelera verso il centro, passa tra B e C e per inerzia arriva nella zona di A. Come nella sezione 4, la traiettoria non segue la linea di campo: conta anche la velocità acquistata.

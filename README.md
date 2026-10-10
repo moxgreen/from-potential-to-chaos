@@ -51,7 +51,9 @@ Strumenti offline: `node strumenti/bz.js x0 x1 y0 y1 N out.json` (mappa dei baci
 - **Layout**: grafici sempre visibili a sinistra (mappa 2D | superficie 3D o spazio delle fasi), barra comandi sotto, tre schede a destra. Schermo intero con Fullscreen API, ripiego CSS (`.pseudo-fs`) se l'iframe lo blocca. Modalità «Solo 2D / Solo 3D».
 - **Fisica**: `potential`, `efieldRaw`, `fillGrid`, `buildContours` (marching squares), `computeFieldLines`.
 - **Dinamica**: `accel` (con attrito), `rk4`, `advance`, `stepSim`, `fieldLineFrom`; stato in `sim` e array `tests` (cariche di prova con traccia `trail`, `trailV`, `trailVX`).
-- **Bacini**: `basinStart`, `basinClassify`, `basinWork` (calcolo progressivo a blocchi di 14–30 ms per frame), legenda in `updateBasinUI`.
+- **Bacini**: `basinStart`, `basinClassify`, `basinWork` (calcolo progressivo a blocchi di 14–30 ms per frame, sulla finestra `basin.win`), legenda in `updateBasinUI`. Registro `attractors` comune a mappa e prove a mano (colore e lettera A, B, C… fissati dall'ordine delle cariche di segno opposto a q₀); `marks` = punti di partenza delle prove a mano (da ferma, attrito viscoso), registrati da `trialEnd` quando `advance` termina; tutto si azzera in `basinClear` quando cambia la fisica.
+- **Prove e scommessa** (scheda 3): `launchTrial` (un clic = una carica da ferma, opzione `state.clickLaunch`), punti sfida `chal` dallo scenario (`challenges`), elenco in `renderChallenges`.
+- **Zoom 2D**: finestra `view = {cx, cy, h}` (`VIEW0` = tutta la mappa, semilato minimo `HMIN = 0,05` cm); `toSX/toSY/toX/toY` e `fillGrid(gridT, NT, view)` la seguono; `setView`, `zoomBy`, pila `viewStack` per «Indietro»; strumento `zoom` (riquadro trascinato o clic ×2), rotella con Ctrl/⌘/Maiusc.
 - **Disegno**: `drawTop` (mappa), `draw3D` (painter's algorithm), `drawPhase` (proiezione x–vₓ); ciclo `frame` con flag `physicsDirty`, `needTop`, `need3D`.
 - **Scenari**: oggetto `SCENARI` (schede 2 e 3) e `PRESETS` (scheda 1).
 
@@ -68,7 +70,7 @@ Notazione: carica di prova `[x0, y0, vx0, vy0]` in cm e cm/s; q₀ = 1 nC, m = 1
 | Partenza da ferma | dipolo ±2 nC in (∓3; 0) | no | (−2, 2, 0, 0) | la traiettoria si stacca dalla linea di campo |
 | Deflessione | due file di 7 cariche ±1 nC a x = ∓3 | no | (−1,5; −9,5) con v_y = 14, 17, 21, 28 | deviazioni decrescenti con v |
 | Punto fisso | BOWL | viscoso γ = 0,4 | (5,2,1,1), (−6,−3,0,0), (0,6,5,2,0) | tutte al centro |
-| Bacini | BOWL + 3 × (−1 nC) su raggio 3 | viscoso γ = 0,2 | 4 partenze da ferma | mappa 100 × 100 in ≈ 10 s; tre bacini con confini frattali |
+| Bacini | BOWL + 3 × (−1 nC) su raggio 3 | viscoso γ = 0,2 | nessuna all'avvio; 9 punti sfida da ferma | punti sfida: (0; 5,5)→A, (−5; −2,5)→B, (5; −2,5)→C, (−1,5; −6)→A, (−4,5; 3,5)→C, (4,5; 3,5)→B, (0; 0) resta ferma, (0,5; 0)→C, (−0,5; 0)→B (A = Q17 in alto, B = Q18, C = Q19); 4–6 robusti a ±0,3 cm. Mappa 100 × 100 in ≈ 10 s; tre bacini con confini frattali |
 | Ciclo limite | BOWL | attivo γ = 0,6, v\* = 2 | (0,5;0;0;0,3), (6,5;0;0;1), (−6;0;0;−1,5) | tutte su r = 3,11 cm, senso antiorario |
 | Biliardo (caos senza attrito) | BOWL + 3 × (+1,5 nC) su raggio 2,2 | no | (0,3; −5,5; 3,5; 0,4), (0,3; −5,48; …), (0,3; −5,5; 3,0; 0,4) | le prime due divergono (λ ≈ 0,6–0,8 s⁻¹ nella fase rapida, dopo ≈ 40 s), la terza resta regolare |
 | Attrattore strano | BOWL + 3 × (+1,5 nC) su raggio 3 | attivo γ = 0,5, v\* = 2,5 | (0,3; −5,5; 2,5; 0,4), (0,3; −5,48; …), (5, 4, 0, −1) | 5 partenze diverse restano confinate e caotiche |
@@ -81,15 +83,15 @@ Risultati negativi utili (da non rifare):
 
 ## 5. Lezione
 
-- Struttura: introduzione, 9 tappe in tre incontri (A: 1–3 potenziale, B: 4–5 moto, C: 6–9 sistemi dinamici e caos), chiusura; 12 domande di verifica con soluzioni.
+- Struttura: introduzione, 9 tappe in tre incontri (A: 1–3 potenziale, B: 4–5 moto, C: 6–9 sistemi dinamici e caos), chiusura; 13 domande di verifica con soluzioni.
 - Le formule (blocchi ```latex) sono convertite in SVG con il mathtext di matplotlib; i comandi non supportati vengono tradotti (`\text` → `\mathrm`, `\frac` → `\dfrac`).
 
 ## 6. Cose da fare
 
 Fatto: struttura a cartelle e git; simulatore modulare con compilazione a file unico; test della fisica sul motore reale (`test/fisica.test.js`: scenari del §4 tranne «rosetta», «partenza da ferma» e «deflessione», ancora senza test); lezione compilabile da `.md` locali.
 
-1. **Figure rigenerate automaticamente.** `shots.py` produce catture con nomi diversi da quelli delle figure della lezione (`f5_ellittiche`/`f5_rutherford` invece di `f5_orbite_rutherford`, `f9_bacini` invece di `f9_bacini_2d`) e non è mai stato eseguito dopo il riordino; i grafici `f6_schema_comportamenti`, `f8_separazione`, `f9_zoom` e i composti `f5_*`, `f9_bacini_2d` non hanno più lo script che li genera (restano `sep2.js` e `bz.js` per i dati). Obiettivo: un solo comando che rigenera tutte le figure.
+1. **Figure rigenerate automaticamente.** Nuova figura da generare e inserire nel testo dello studente (tappa 9): `f9_prove` (`python strumenti/shots.py f9_prove`, serve Playwright).  `shots.py` produce catture con nomi diversi da quelli delle figure della lezione (`f5_ellittiche`/`f5_rutherford` invece di `f5_orbite_rutherford`, `f9_bacini` invece di `f9_bacini_2d`) e non è mai stato eseguito dopo il riordino; i grafici `f6_schema_comportamenti`, `f8_separazione`, `f9_zoom` e i composti `f5_*`, `f9_bacini_2d` non hanno più lo script che li genera (restano `sep2.js` e `bz.js` per i dati). Obiettivo: un solo comando che rigenera tutte le figure.
 2. **Numeri nei testi.** Alcune cifre sono scritte a mano nei `.md`: far leggere i valori dai test. In particolare il testo del relatore (tappa 5) dà 1,47 cm per Rutherford; è giusto solo «da lontano» e va precisato che nel laboratorio la partenza a 9,5 cm dà 1,27 cm.
 3. **Collegamenti.** I `.md` puntano al simulatore su claude.ai; per una lezione tutta offline potrebbero puntare a `potenziale-cariche.html` nella stessa cartella.
-4. Possibili migliorie: sezione di Poincaré per l'attrattore strano; zoom interattivo sulla mappa dei bacini; scelta della coppia di variabili nello spazio delle fasi (x–vₓ o y–v_y); tema scuro.
+4. Possibili migliorie: sezione di Poincaré per l'attrattore strano; scelta della coppia di variabili nello spazio delle fasi (x–vₓ o y–v_y); tema scuro.
 5. Se si vuole aggiornare la versione online del simulatore: `make simulatore` e ripubblicare `dist/potenziale-cariche.html` su claude.ai (artifact JBUKU3S2H6ZyMqB8o5mJRk).

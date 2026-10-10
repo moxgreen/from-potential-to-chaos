@@ -11,7 +11,8 @@ function updateReadout(){
   $('rv').textContent = fmtV(potential(p.x, p.y), true) + ' V';
   efieldRaw(p.x, p.y); $('re').textContent = fmtE(Math.hypot(_ex, _ey)*KE);
 }
-function snapV(v){ return state.snap ? Math.round(v*2)/2 : Math.round(v*10)/10; }
+// aggancio a 0,5 cm (o 0,1 cm senza griglia); con lo zoom il passo si riduce con la finestra
+function snapV(v){ const s = Math.min(state.snap ? 0.5 : 0.1, niceStep(view.h/20)); return Math.round(Math.round(v/s)*s*1e6)/1e6; }
 const clampL = v => Math.max(-L, Math.min(L, v));
 function select(c){ selected = c; lastSel = 'charge'; syncUI(); redraw(); }
 function changed(){ basinClear(); markPhysics(); syncUI(); }
@@ -59,6 +60,10 @@ function setProbe(sx, sy){ state.probe = insidePlot(sx, sy) ? { x: toX(sx), y: t
 function grab(ev){ topCv.setPointerCapture(ev.pointerId); topCv.classList.add('dragging'); }
 topCv.addEventListener('pointerdown', ev => {
   const [sx, sy] = eventPos(ev);
+  if (state.tool === 'zoom'){
+    if (insidePlot(sx, sy)){ zsel = { sx0: sx, sy0: sy, sx1: sx, sy1: sy }; topCv.setPointerCapture(ev.pointerId); }
+    return;
+  }
   let p = handleAt(sx, sy);
   if (p){ tdrag = { p, mode: 'vel' }; grab(ev); return; }
   p = testAt(sx, sy);
@@ -66,17 +71,22 @@ topCv.addEventListener('pointerdown', ev => {
   const c = chargeAt(sx, sy);
   if (c){ selected = c; lastSel = 'charge'; drag = c; grab(ev); syncUI(); redraw(); return; }
   if (!insidePlot(sx, sy)) return;
-  const x = clampL(snapV(toX(sx))), y = clampL(snapV(toY(sy)));
+  let x = clampL(snapV(toX(sx))), y = clampL(snapV(toY(sy)));
+  if (state.tool === 'test' && chal.list){     // un clic vicino a un anello numerato prende esattamente il punto sfida
+    for (const [cx, cy] of chal.list) if (Math.hypot(sx - toSX(cx), sy - toSY(cy)) <= 11){ x = cx; y = cy; break; }
+  }
   if (state.tool === 'add'){
     const nc = addCharge(x, y, state.newSign*Math.max(0.5, Math.min(10, state.newMag)));
     if (nc){ selected = nc; lastSel = 'charge'; drag = nc; grab(ev); changed(); }
   } else if (state.tool === 'test'){
+    if (state.clickLaunch){ launchTrial(x, y); return; }
     const np = addTest(x, y, 0, 0);
     if (np){ selectTest(np); tdrag = { p: np, mode: 'vel' }; grab(ev); resetSim(); }
   } else { probeDrag = true; topCv.setPointerCapture(ev.pointerId); setProbe(sx, sy); }
 });
 topCv.addEventListener('pointermove', ev => {
   const [sx, sy] = eventPos(ev);
+  if (zsel){ zsel.sx1 = sx; zsel.sy1 = sy; needTop = true; schedule(); return; }
   if (tdrag){
     const p = tdrag.p;
     if (tdrag.mode === 'pos'){
@@ -97,12 +107,32 @@ topCv.addEventListener('pointermove', ev => {
   if (probeDrag || ev.pointerType === 'mouse') setProbe(sx, sy);
   topCv.classList.toggle('over-charge', !!(chargeAt(sx, sy) || testAt(sx, sy) || handleAt(sx, sy)));
 });
-function endDrag(){ drag = null; tdrag = null; probeDrag = false; topCv.classList.remove('dragging'); }
-topCv.addEventListener('pointerup', endDrag);
-topCv.addEventListener('pointercancel', endDrag);
+function endDrag(){ drag = null; tdrag = null; probeDrag = false; zsel = null; topCv.classList.remove('dragging'); }
+topCv.addEventListener('pointerup', () => {
+  if (zsel){
+    // riquadro trascinato: si ingrandisce il quadrato che lo contiene; clic semplice: zoom ×2 attorno al punto
+    const z = zsel, s = Math.max(Math.abs(z.sx1 - z.sx0), Math.abs(z.sy1 - z.sy0));
+    if (s < 8) zoomBy(0.5, toX(z.sx0), toY(z.sy0));
+    else setView({ cx: toX((z.sx0 + z.sx1)/2), cy: toY((z.sy0 + z.sy1)/2), h: +(s/TL.P*view.h).toPrecision(2) });
+    redraw();
+  }
+  endDrag();
+});
+topCv.addEventListener('pointercancel', () => { endDrag(); redraw(); });
 topCv.addEventListener('pointerleave', ev => { if (!drag && !tdrag && ev.pointerType === 'mouse'){ state.probe = null; updateReadout(); redraw(); } });
+let wheelT = 0;
 topCv.addEventListener('wheel', ev => {
-  const [sx, sy] = eventPos(ev), c = chargeAt(sx, sy);
+  const [sx, sy] = eventPos(ev);
+  if (ev.ctrlKey || ev.metaKey || ev.shiftKey || state.tool === 'zoom'){
+    // zoom a rotella (o pizzico sul trackpad) attorno al cursore; una serie di scatti conta come un solo passo per «Indietro»
+    if (!insidePlot(sx, sy)) return;
+    ev.preventDefault();
+    const d = ev.deltaY || ev.deltaX; if (!d) return;
+    const now = performance.now(), push = now - wheelT > 500; wheelT = now;
+    zoomBy(Math.exp(Math.max(-0.4, Math.min(0.4, d*0.002))), toX(sx), toY(sy), push);
+    return;
+  }
+  const c = chargeAt(sx, sy);
   if (!c) return;
   ev.preventDefault();
   const q = Math.max(-10, Math.min(10, Math.round((c.q + (ev.deltaY < 0 ? 0.5 : -0.5))*2)/2));
@@ -146,7 +176,56 @@ function segmented(id, cb){
   });
 }
 function setSeg(id, v){ $(id).querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.v === String(v))); }
-function setTool(v){ state.tool = v; setSeg('toolSeg', v); $('toolTest').classList.toggle('on', v === 'test'); }
+function setTool(v){
+  state.tool = v; setSeg('toolSeg', v);
+  $('toolTest').classList.toggle('on', v === 'test'); $('zoomTool').classList.toggle('on', v === 'zoom');
+  topCv.classList.toggle('zooming', v === 'zoom');
+}
+
+/* --- zoom della mappa 2D --- */
+const viewStack = [];
+const sameView = (a, b) => a.cx === b.cx && a.cy === b.cy && a.h === b.h;
+const r6 = v => Math.round(v*1e6)/1e6;
+function setView(v, push = true){
+  if (v.h < HMIN*0.999) toast('Ingrandimento massimo: a scale più piccole il calcolo numerico non è più affidabile');
+  const h = r6(Math.max(HMIN, Math.min(L, v.h))), s = niceStep(h/20);     // centro su una griglia (1/20 della finestra): coordinate leggibili
+  const c = u => r6(Math.max(-L + h, Math.min(L - h, Math.round(u/s)*s)));
+  const nv = { cx: c(v.cx), cy: c(v.cy), h };
+  if (sameView(nv, view)) return;
+  if (push){ viewStack.push(view); if (viewStack.length > 40) viewStack.shift(); }
+  view = nv; state.probe = null;
+  markPhysics(); updateZoomUI(); updateBasinUI(); updateReadout();
+  if (state.basinFollow && (basin.active || (basin.data && basin.show))) basinFollow();
+}
+// Con una mappa in vista, dopo uno zoom la mappa si rifà nella nuova finestra (stesse partenze per lato, celle più piccole).
+// Si aspetta che lo zoom si fermi (rotella), e si riusa una mappa già calcolata se c'è.
+let followT = 0;
+function basinFollow(){
+  clearTimeout(followT);
+  followT = setTimeout(() => { if (!(basin.data && sameView(basin.win, view)) && !basinRestore(view)) basinStart(); }, 350);
+}
+// ingrandimento di un fattore f (< 1 ingrandisce) tenendo fermo il punto (x, y)
+function zoomBy(f, x, y, push = true){ setView({ cx: x + (view.cx - x)*f, cy: y + (view.cy - y)*f, h: view.h*f }, push); }
+function zoomBack(){ if (viewStack.length) setView(viewStack.pop(), false); }
+function resetView(){ viewStack.length = 0; if (!sameView(view, VIEW0)){ view = { ...VIEW0 }; markPhysics(); } updateZoomUI(); }
+function fmtWin(w){
+  const d = Math.max(1, Math.ceil(-Math.log10(w.h)) + 2), f = v => minus(String(+v.toFixed(d)).replace('.', ','));
+  return `x ∈ [${f(w.cx - w.h)}; ${f(w.cx + w.h)}], y ∈ [${f(w.cy - w.h)}; ${f(w.cy + w.h)}] cm`;
+}
+function updateZoomUI(){
+  const full = sameView(view, VIEW0);
+  $('zoomStatus').textContent = full ? 'Si vede tutta la mappa.' : `Finestra: ${fmtWin(view)} · zoom ×${SIG3.format(L/view.h)}`;
+  $('zoomBack').disabled = !viewStack.length; $('zoomAll').disabled = full; $('zoomOut').disabled = full;
+  $('zoomIn').disabled = view.h <= HMIN;
+  $('zoomCalc').textContent = sameView(view, VIEW0) ? 'Calcola la mappa' : 'Calcola la mappa qui';
+}
+$('zoomTool').addEventListener('click', () => setTool(state.tool === 'zoom' ? 'test' : 'zoom'));
+$('zoomIn').addEventListener('click', () => zoomBy(0.5, view.cx, view.cy));
+$('zoomOut').addEventListener('click', () => zoomBy(2, view.cx, view.cy));
+$('zoomBack').addEventListener('click', zoomBack);
+$('zoomAll').addEventListener('click', () => setView(VIEW0));
+$('zoomCalc').addEventListener('click', () => { if (!basinRestore(view)) basinStart(); });
+$('optFollow').addEventListener('change', e => { state.basinFollow = e.target.checked; });
 function setRight(v){
   state.right = v; setSeg('rightSeg', v);
   $('camTools').hidden = v !== '3d';
@@ -195,6 +274,7 @@ for (const [id, key] of Object.entries({ optFill: 'fill', optZero: 'hlZero', opt
 /* --- configurazioni (scheda 1) --- */
 function loadPreset(name){
   charges = []; selected = null;
+  resetView(); chal.list = null; chal.cur = chal.reached = -1; renderChallenges();
   for (const [x, y, q] of PRESETS[name]) addCharge(x, y, q);
   if (state.vmax > 3000) setScale(1000, 10);
   changed();
@@ -206,6 +286,17 @@ $('clearAll').addEventListener('click', () => { charges = []; selected = null; c
 const anyActive = () => tests.some(p => p.status === 'ready' || p.status === 'moving');
 function selectTest(p){ selTest = p; lastSel = 'test'; updateTestUI(); redraw(); }
 function deleteTest(p){ tests = tests.filter(q => q !== p); if (selTest === p) selTest = null; resetSim(); }
+// Lancio con un clic (prove sui bacini): la carica parte da ferma senza azzerare le altre in moto.
+// Delle prove finite resta solo l'ultima (per confrontare due partenze vicine) e il punto colorato.
+function launchTrial(x, y){
+  if (nearestDist(x, y) < HIT_R){ toast('Troppo vicino a una carica: scegli un altro punto'); return; }
+  const done = tests.filter(p => p.status !== 'ready' && p.status !== 'moving');
+  tests = tests.filter(p => p.status === 'ready' || p.status === 'moving' || p === done[done.length - 1]);
+  if (!anyActive()){ sim.t = 0; phaseV = 1; }
+  const p = addTest(x, y, 0, 0); if (!p) return;
+  selTest = p; lastSel = 'test';
+  sim.running = true; sim.lastTs = 0; updateTestUI(); redraw(); schedule();
+}
 function startSim(){
   if (!tests.length){ setTool('test'); toast('Clicca sulla mappa per posizionare una carica di prova'); return; }
   if (!anyActive()) resetSim();
@@ -274,25 +365,79 @@ $('gamma').addEventListener('input', e => { setDamp(sim.damp, parseFloat(e.targe
 $('vstar').addEventListener('input', e => { setDamp(sim.damp, null, parseFloat(e.target.value)); resetSim(); });
 
 /* --- bacini: interfaccia --- */
-function basinLabel(k){
-  return k.kind === 'q' ? `cade su Q${k.idx + 1} (${fmtCm(k.x)}; ${fmtCm(k.y)})` : `si ferma in (${fmtCm(k.x)}; ${fmtCm(k.y)})`;
+const fmtPt = v => Number.isInteger(Math.round(v*1e6)/1e5) ? fmtCm(v) : minus(String(+v.toFixed(3)).replace('.', ','));   // più cifre solo se servono (zoom)
+const at = (x, y) => `(${fmtPt(x)}; ${fmtPt(y)})`;
+function outcomeText(a){
+  if (a.kind === 'q') return `finisce su ${a.letter}, ${placeName(a.x, a.y)}`;
+  return Math.hypot(a.x, a.y) < 0.5 ? 'resta ferma al centro (equilibrio)' : `si ferma in ${at(a.x, a.y)} (equilibrio)`;
+}
+function trialDone(p, k){
+  const a = attractors[k];
+  $('trialStatus').innerHTML = `<span class="sw" style="background:${a.col}"></span>Partenza da ${at(p.x0, p.y0)}: ${outcomeText(a)}.`;
+  updateBasinUI(); needTop = true;
 }
 function updateBasinUI(){
-  const N = basin.N, done = basin.data && !basin.active;
+  const N = basin.N, done = basin.data && !basin.active, bw = basin.win;
   $('basinBar').style.width = basin.data ? Math.round(basin.row/N*100) + '%' : '0%';
-  $('basinGo').textContent = basin.active ? 'Calcolo in corso…' : (basin.data ? 'Ricalcola' : 'Calcola la mappa');
-  $('basinStatus').textContent = basin.active ? `Calcolo: ${Math.round(basin.row/N*100)}% (${N}×${N} partenze da ferma)`
-    : done ? `Fatto: ${N}×${N} partenze da ferma.` : 'Vale per le cariche e l\'attrito attuali; serve l\'attrito viscoso.';
+  const here = !sameView(view, VIEW0) && !(basin.data && sameView(bw, view));
+  $('basinGo').textContent = basin.active ? 'Calcolo in corso…' : here ? 'Calcola la mappa qui' : basin.data ? 'Ricalcola' : 'Calcola la mappa';
+  const where = sameView(bw, VIEW0) ? '' : ` in ${fmtWin(bw)} (cella di ${SIG3.format(2*bw.h/N*10)} mm)`;
+  $('basinStatus').textContent = basin.active ? `Calcolo: ${Math.round(basin.row/N*100)}% (${N}×${N} partenze da ferma${where})`
+    : done ? `Fatto: ${N}×${N} partenze da ferma${where}.` + (sameView(bw, view) ? '' : ' Con lo zoom attuale si vede solo una parte della mappa, o niente.')
+    : 'Vale per le cariche e l\'attrito attuali; serve l\'attrito viscoso.';
+  if (!marks.length) $('trialStatus').textContent = '';
+  // legenda unica per prove e mappa: le cariche attrattive A, B, C… (anche prima di ogni prova) e gli equilibri trovati
   const leg = $('basinLegend'); leg.innerHTML = '';
-  if (!basin.data) return;
-  const tot = basin.keys.reduce((s, k) => s + k.n, 0) + basin.undecided;
-  for (const k of [...basin.keys].filter(k => k.n > 0).sort((a, b) => b.n - a.n)){
-    const d = document.createElement('div');
-    d.innerHTML = `<span class="sw" style="background:${k.col}"></span>${basinLabel(k)} · ${tot ? Math.round(k.n/tot*100) : 0}%`;
-    leg.appendChild(d);
-  }
-  if (basin.undecided){ const d = document.createElement('div'); d.innerHTML = `<span class="sw" style="background:#464a54"></span>non si ferma entro 200 s`; leg.appendChild(d); }
+  const tot = basin.n.reduce((s, v) => s + (v || 0), 0) + basin.undecided, ranks = attractorRanks() || [];
+  const pct = k => {
+    const n = k >= 0 && basin.data && tot ? basin.n[k] || 0 : 0;
+    return n ? ` · ${n/tot < 0.01 ? 'meno dell\'1' : Math.round(n/tot*100)}% della mappa` : '';
+  };
+  const row = (col, txt) => { const d = document.createElement('div'); d.innerHTML = `<span class="sw" style="background:${col}"></span>${txt}`; leg.appendChild(d); };
+  ranks.forEach((ci, r) => {
+    const c = charges[ci], k = attractors.findIndex(a => a.kind === 'q' && a.idx === ci);
+    row(candColor(r), `<b>${LETTERS[r]}</b> · Q${ci + 1}, ${placeName(c.x, c.y)} ${at(c.x, c.y)}${pct(k)}`);
+  });
+  attractors.forEach((a, k) => {
+    if (a.kind === 'q' && ranks.includes(a.idx)) return;
+    row(a.col, `<b>${a.letter}</b> · ${a.kind === 'q' ? `Q${a.idx + 1} ${at(a.x, a.y)}` : `equilibrio in ${at(a.x, a.y)}`}${pct(k)}`);
+  });
+  if (basin.data && basin.undecided) row('#464a54', `non si ferma entro 200 s · ${Math.max(1, Math.round(basin.undecided/tot*100))}% della mappa`);
+  renderChallenges();
 }
+
+/* --- punti sfida (scommessa) --- */
+let chalSig = '';
+function renderChallenges(){
+  const res = chal.list ? chal.list.map(([x, y]) => { const m = markAt(x, y); return m && attractors[m.k] ? m.k : -1; }) : [];
+  const sig = JSON.stringify([chal.list, chal.cur, res, attractors.map(a => a.col)]);
+  if (sig === chalSig) return;             // si ricostruisce solo se cambia qualcosa (updateBasinUI gira a ogni fotogramma del calcolo)
+  chalSig = sig;
+  $('chalBox').hidden = !chal.list;
+  const ol = $('chalList'); ol.innerHTML = '';
+  if (!chal.list) return;
+  chal.list.forEach(([x, y], n) => {
+    const li = document.createElement('li'), a = res[n] >= 0 ? attractors[res[n]] : null;
+    li.dataset.n = n; if (n === chal.cur) li.className = 'cur';
+    li.innerHTML = `<span class="pt"><b>${n + 1}</b> · ${at(x, y)}</span>`
+      + `<button class="btn sm" data-a="show">Evidenzia</button><button class="btn sm" data-a="go">Mettila per me</button>`
+      + `<span class="res">${a ? `<span class="sw" style="background:${a.col}"></span>${outcomeText(a)}` : ''}</span>`;
+    ol.appendChild(li);
+  });
+}
+$('chalList').addEventListener('click', e => {
+  const b = e.target.closest('button'), li = e.target.closest('li'); if (!b || !li) return;
+  const n = +li.dataset.n, [x, y] = chal.list[n];
+  chal.cur = n; chal.reached = Math.max(chal.reached, n);
+  if (b.dataset.a === 'show'){
+    setTool('test');
+    if (view.h < L && (Math.abs(x - view.cx) > view.h || Math.abs(y - view.cy) > view.h)) resetView();
+    toast(`Punto ${n + 1}: ${at(x, y)}. Su quale carica andrà a finire?`);
+  } else launchTrial(x, y);
+  renderChallenges(); redraw();
+});
+$('optLaunch').addEventListener('change', e => { state.clickLaunch = e.target.checked; if (state.clickLaunch) setTool('test'); });
+$('marksClear').addEventListener('click', () => { marks = []; updateBasinUI(); redraw(); });
 $('basinGo').addEventListener('click', () => { if (!basin.active) basinStart(); });
 segmented('basinRes', v => { basin.N = parseInt(v, 10); if (basin.data) basinStart(); });
 $('optBasin').addEventListener('change', e => { basin.show = e.target.checked; redraw(); });
@@ -310,11 +455,15 @@ function loadScenario(name){
   if (state.vmax !== vm || state.nlev !== nl) setScale(vm, nl);
   if (S.right) setRight(S.right);
   setTool('test');
+  resetView();
+  state.clickLaunch = !!S.clickLaunch; $('optLaunch').checked = state.clickLaunch;
+  chal.list = S.challenges || null; chal.cur = chal.reached = -1;
   tests = [];
   for (const [x, y, vx, vy] of S.tests) addTest(x, y, vx, vy);
   selTest = tests[0] || null; lastSel = 'test';
-  changed(); resetSim(); startSim();
-  if (S.basins) basinStart();
+  changed(); resetSim();
+  if (tests.length) startSim(); else if (S.clickLaunch) toast('Clicca sulla mappa: la carica parte da ferma');
+  updateBasinUI();
 }
 $('tpresets2').addEventListener('click', e => { const b = e.target.closest('button'); if (b){ setRight('3d'); loadScenario(b.dataset.t); } });
 document.querySelectorAll('#tab3 .try').forEach(b => b.addEventListener('click', () => loadScenario(b.dataset.s)));
@@ -358,6 +507,7 @@ document.addEventListener('webkitfullscreenchange', fsChanged);
 /* --- tastiera --- */
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && stageArea.classList.contains('pseudo-fs')){ stageArea.classList.remove('pseudo-fs'); fsChanged(); return; }
+  if (e.key === 'Escape' && !e.target.matches('input, textarea')){ if (zsel){ zsel = null; redraw(); } else zoomBack(); return; }
   if (e.target.matches('input, textarea, button')) return;
   if (e.key === ' '){ e.preventDefault(); $('simPlay').click(); return; }
   if (e.key === 'f' || e.key === 'F'){ toggleFs(); return; }
@@ -384,5 +534,5 @@ new ResizeObserver(relayout).observe($('threeStage'));
 $('vmax').value = Math.round(50*Math.log10(state.vmax/100)); $('nlev').value = state.nlev;
 syncScale(); setDamp('none'); setRight('3d');
 loadPreset('dipolo');
-updateTestUI(); updateBasinUI();
+updateTestUI(); updateBasinUI(); updateZoomUI();
 relayout();

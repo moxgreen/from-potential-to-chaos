@@ -13,10 +13,17 @@ function layoutTop(){
   TL.x0 = ml + Math.max(0, (topW - ml - mr - P)/2);
   TL.y0 = mt + Math.max(0, (topH - mt - mb - P)/2);
 }
-const toSX = x => TL.x0 + (x + L)/(2*L)*TL.P;
-const toSY = y => TL.y0 + (L - y)/(2*L)*TL.P;
-const toX = sx => (sx - TL.x0)/TL.P*2*L - L;
-const toY = sy => L - (sy - TL.y0)/TL.P*2*L;
+const toSX = x => TL.x0 + (x - view.cx + view.h)/(2*view.h)*TL.P;
+const toSY = y => TL.y0 + (view.cy + view.h - y)/(2*view.h)*TL.P;
+const toX = sx => view.cx - view.h + (sx - TL.x0)/TL.P*2*view.h;
+const toY = sy => view.cy + view.h - (sy - TL.y0)/TL.P*2*view.h;
+// passo «tondo» (1, 2, 5 × 10ⁿ) non minore di x, per tacche, griglia e aggancio a ogni ingrandimento
+function niceStep(x){ const e = Math.pow(10, Math.floor(Math.log10(x))), m = x/e; return (m <= 1.0001 ? 1 : m <= 2.0001 ? 2 : m <= 5.0001 ? 5 : 10)*e; }
+function fmtTick(v, s){ const d = Math.max(0, -Math.floor(Math.log10(s) + 1e-9)); return minus((Math.abs(v) < s/2 ? 0 : v).toFixed(d).replace('.', ',')); }
+function ticks(lo, hi, s){ const out = []; for (let k = Math.ceil(lo/s - 1e-9); k*s <= hi + s*1e-9; k++) out.push(k*s); return out; }
+// punti sfida dello scenario (chal.list), quello evidenziato (cur) e il più avanzato mostrato finora (reached)
+const chal = { list: null, cur: -1, reached: -1 };
+let zsel = null;   // riquadro di zoom in corso di trascinamento (coordinate di schermo)
 const chargeRadius = c => (8 + 2.2*Math.sqrt(Math.abs(c.q)))*Math.min(FS, 1.25);
 
 const heat = document.createElement('canvas'); heat.width = NT; heat.height = NT;
@@ -131,21 +138,63 @@ function drawTestsAbove(ctx){
   }
 }
 
+function drawMarks(ctx){
+  const r = 6*Math.min(FS, 1.3);
+  for (const m of marks){
+    const a = attractors[m.k]; if (!a) continue;
+    const sx = toSX(m.x), sy = toSY(m.y);
+    ctx.beginPath(); ctx.arc(sx, sy, r, 0, 2*Math.PI); ctx.fillStyle = a.col; ctx.fill();
+    ctx.lineWidth = 2; ctx.strokeStyle = '#fff'; ctx.stroke();
+    ctx.beginPath(); ctx.arc(sx, sy, r + 1.6, 0, 2*Math.PI); ctx.lineWidth = 1; ctx.strokeStyle = 'rgba(20,42,76,.6)'; ctx.stroke();
+  }
+}
+function drawChallenges(ctx, font){
+  if (!chal.list) return;
+  chal.list.forEach(([x, y], n) => {
+    if (n > chal.reached) return;
+    const sx = toSX(x), sy = toSY(y), cur = n === chal.cur, m = markAt(x, y), r = cur ? 14 : 10;
+    ctx.beginPath(); ctx.arc(sx, sy, r, 0, 2*Math.PI);
+    ctx.lineWidth = cur ? 6 : 4; ctx.strokeStyle = 'rgba(255,255,255,.85)'; ctx.stroke();
+    ctx.lineWidth = cur ? 2.6 : 1.6; ctx.strokeStyle = m && attractors[m.k] ? attractors[m.k].col : INK;
+    ctx.setLineDash(m ? [] : [4,3]); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = INK; ctx.font = `700 ${Math.round((cur ? 15 : 12)*FS)}px ${font}`; ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
+    haloText(ctx, String(n + 1), sx + r*0.75, sy - r*0.75);
+  });
+}
+// lettere e anelli colorati sulle cariche che possono attirare la carica di prova (solo con attrito viscoso)
+function attractorRanks(){
+  if (sim.damp !== 'visc') return null;
+  const c = attractorCands();
+  return c.length >= 2 && c.length <= LETTERS.length ? c : null;
+}
+
 function drawTop(){
   const ctx = tctx, P = TL.P, x0 = TL.x0, y0 = TL.y0, font = FONT();
   if (topW < 10) return;
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.clearRect(0, 0, topW, topH);
   ctx.fillStyle = '#fff'; ctx.fillRect(x0, y0, P, P);
-  const showBasin = basin.data && basin.show;
-  if (showBasin){ ctx.imageSmoothingEnabled = false; ctx.drawImage(basin.cv, x0, y0, P, P); ctx.imageSmoothingEnabled = true; }
-  else if (state.fill){ ctx.imageSmoothingEnabled = true; ctx.drawImage(heat, x0, y0, P, P); }
+  const showBasin = basin.data && basin.show, bwin = basin.win;
+  const sameWin = bwin.cx === view.cx && bwin.cy === view.cy && bwin.h === view.h;
+  const xlo = view.cx - view.h, xhi = view.cx + view.h, ylo = view.cy - view.h, yhi = view.cy + view.h;
+  if ((!showBasin || !sameWin) && state.fill){ ctx.imageSmoothingEnabled = true; ctx.drawImage(heat, x0, y0, P, P); }
+  if (showBasin){
+    // la mappa sta sulla finestra in cui è stata calcolata (dopo uno zoom può occupare solo una parte del riquadro)
+    const bx = toSX(bwin.cx - bwin.h), by = toSY(bwin.cy + bwin.h), bs = toSX(bwin.cx + bwin.h) - bx;
+    ctx.save(); ctx.beginPath(); ctx.rect(x0, y0, P, P); ctx.clip();
+    ctx.imageSmoothingEnabled = false; ctx.drawImage(basin.cv, bx, by, bs, bs); ctx.imageSmoothingEnabled = true;
+    if (!sameWin){ ctx.strokeStyle = INK; ctx.lineWidth = 1.5; ctx.setLineDash([6,4]); ctx.strokeRect(bx, by, bs, bs); ctx.setLineDash([]); }
+    ctx.restore();
+  }
 
+  const gstep = niceStep(2*view.h/20);
   ctx.lineWidth = 1; ctx.strokeStyle = 'rgba(20,42,76,.08)'; ctx.beginPath();
-  for (let v = -L; v <= L; v += 1){ const sx = toSX(v), sy = toSY(v); ctx.moveTo(sx, y0); ctx.lineTo(sx, y0+P); ctx.moveTo(x0, sy); ctx.lineTo(x0+P, sy); }
+  for (const v of ticks(xlo, xhi, gstep)){ const sx = toSX(v); ctx.moveTo(sx, y0); ctx.lineTo(sx, y0+P); }
+  for (const v of ticks(ylo, yhi, gstep)){ const sy = toSY(v); ctx.moveTo(x0, sy); ctx.lineTo(x0+P, sy); }
   ctx.stroke();
   ctx.strokeStyle = 'rgba(20,42,76,.3)'; ctx.setLineDash([4,4]); ctx.beginPath();
-  ctx.moveTo(toSX(0), y0); ctx.lineTo(toSX(0), y0+P); ctx.moveTo(x0, toSY(0)); ctx.lineTo(x0+P, toSY(0));
+  if (xlo <= 0 && xhi >= 0){ ctx.moveTo(toSX(0), y0); ctx.lineTo(toSX(0), y0+P); }
+  if (ylo <= 0 && yhi >= 0){ ctx.moveTo(x0, toSY(0)); ctx.lineTo(x0+P, toSY(0)); }
   ctx.stroke(); ctx.setLineDash([]);
 
   ctx.save(); ctx.beginPath(); ctx.rect(x0, y0, P, P); ctx.clip();
@@ -179,15 +228,15 @@ function drawTop(){
     }
     ctx.fill();
   } else if (state.field === 'vectors' && charges.length){
-    const n = 16, cell = 2*L/n, vals = []; let lmin = Infinity, lmax = -Infinity;
+    const n = 16, cell = 2*view.h/n, vals = []; let lmin = Infinity, lmax = -Infinity;
     for (let j = 0; j < n; j++) for (let i = 0; i < n; i++){
-      const x = -L + (i + 0.5)*cell, y = -L + (j + 0.5)*cell;
-      if (nearestDist(x, y) < 0.7) continue;
+      const x = xlo + (i + 0.5)*cell, y = ylo + (j + 0.5)*cell;
+      if (nearestDist(x, y) < 0.7*view.h/L) continue;
       efieldRaw(x, y); const mag = Math.hypot(_ex, _ey); if (mag === 0) continue;
       const lm = Math.log10(mag); lmin = Math.min(lmin, lm); lmax = Math.max(lmax, lm);
       vals.push([x, y, _ex/mag, _ey/mag, lm]);
     }
-    const len = cell/(2*L)*P*0.78;
+    const len = P/n*0.78;
     for (const [x, y, ux, uy, lm] of vals){
       const t = lmax > lmin ? (lm - lmin)/(lmax - lmin) : 1, sx = toSX(x), sy = toSY(y), dx = ux*len/2, dy = -uy*len/2;
       ctx.strokeStyle = ctx.fillStyle = `rgba(20,42,76,${0.22 + 0.73*t})`; ctx.lineWidth = 1 + 1.2*t;
@@ -208,15 +257,19 @@ function drawTop(){
 
   ctx.strokeStyle = INK; ctx.lineWidth = 1.2; ctx.strokeRect(x0, y0, P, P);
 
-  // cariche sorgente
-  const showLab = state.labels;
-  for (const c of charges){
+  // cariche sorgente (con lo zoom quelle fuori dal riquadro non si disegnano)
+  const showLab = state.labels, ranks = attractorRanks();
+  ctx.save(); ctx.beginPath(); ctx.rect(x0 - 14, y0 - 14, P + 28, P + 28); ctx.clip();
+  charges.forEach((c, ci) => {
     const sx = toSX(c.x), sy = toSY(c.y), r = chargeRadius(c);
+    if (sx < x0 - 30 || sx > x0 + P + 30 || sy < y0 - 30 || sy > y0 + P + 30) return;
     ctx.beginPath(); ctx.arc(sx, sy, r + 2, 0, 2*Math.PI); ctx.fillStyle = '#fff'; ctx.fill();
     ctx.beginPath(); ctx.arc(sx, sy, r, 0, 2*Math.PI); ctx.fillStyle = c.q > 0 ? POS : c.q < 0 ? NEG : '#8a93a6'; ctx.fill();
-    if (showBasin && basin.keys.length){
-      const k = basin.keys.find(a => a.kind === 'q' && charges[a.idx] === c);
-      if (k){ ctx.lineWidth = 4; ctx.strokeStyle = k.col; ctx.beginPath(); ctx.arc(sx, sy, r + 4, 0, 2*Math.PI); ctx.stroke(); }
+    const rk = ranks ? ranks.indexOf(ci) : -1;
+    if (rk >= 0){
+      ctx.lineWidth = 4; ctx.strokeStyle = candColor(rk); ctx.beginPath(); ctx.arc(sx, sy, r + 4, 0, 2*Math.PI); ctx.stroke();
+      ctx.fillStyle = INK; ctx.font = `700 ${Math.round(16*FS)}px ${font}`; ctx.textAlign = 'right'; ctx.textBaseline = 'bottom';
+      haloText(ctx, LETTERS[rk], sx - r - 4, sy - r + 2);
     }
     ctx.strokeStyle = '#fff'; ctx.lineWidth = 2.4; ctx.lineCap = 'round'; ctx.beginPath();
     ctx.moveTo(sx - r*0.5, sy); ctx.lineTo(sx + r*0.5, sy);
@@ -227,8 +280,27 @@ function drawTop(){
       ctx.fillStyle = INK; ctx.font = `600 ${Math.round(13*FS)}px ${font}`; ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
       haloText(ctx, fmtQ(c.q), sx + r + 4, sy - r + 2);
     }
-  }
+  });
+  ctx.restore();
   drawTestsAbove(ctx);
+  ctx.save(); ctx.beginPath(); ctx.rect(x0, y0, P, P); ctx.clip();
+  drawMarks(ctx);
+  drawChallenges(ctx, font);
+  if (zsel){
+    const s = Math.max(Math.abs(zsel.sx1 - zsel.sx0), Math.abs(zsel.sy1 - zsel.sy0));
+    const cx = (zsel.sx0 + zsel.sx1)/2, cy = (zsel.sy0 + zsel.sy1)/2;
+    ctx.fillStyle = 'rgba(20,42,76,.08)'; ctx.fillRect(cx - s/2, cy - s/2, s, s);
+    ctx.strokeStyle = INK; ctx.lineWidth = 1.5; ctx.setLineDash([5,4]); ctx.strokeRect(cx - s/2, cy - s/2, s, s); ctx.setLineDash([]);
+  }
+  ctx.restore();
+  if (view.h < L){
+    const txt = 'Zoom ×' + SIG3.format(L/view.h);
+    ctx.font = `600 ${Math.round(13*FS)}px ${font}`;
+    const tw = ctx.measureText(txt).width + 12, th = 22*FS, tx = x0 + P - tw - 8, ty = y0 + 8;
+    ctx.fillStyle = 'rgba(255,255,255,.93)'; ctx.strokeStyle = 'rgba(20,42,76,.3)'; ctx.lineWidth = 1;
+    roundBox(ctx, tx, ty, tw, th, 5); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = INK; ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.fillText(txt, tx + 6, ty + th/2 + 0.5);
+  }
 
   if (pr){
     const sx = toSX(pr.x), sy = toSY(pr.y);
@@ -251,11 +323,11 @@ function drawTop(){
 
   // assi
   ctx.font = `${Math.round(12*FS)}px ${font}`; ctx.fillStyle = MUTED;
-  const tstep = P > 420 ? 2 : 5;
+  const tstep = niceStep(2*view.h/(P > 420 ? 10 : 5));
   ctx.textAlign = 'center'; ctx.textBaseline = 'top';
-  for (let v = -L; v <= L; v += tstep) ctx.fillText(minus(String(v)), toSX(v), y0 + P + 6);
+  for (const v of ticks(xlo, xhi, tstep)) ctx.fillText(fmtTick(v, tstep), toSX(v), y0 + P + 6);
   ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
-  for (let v = -L; v <= L; v += tstep) ctx.fillText(minus(String(v)), x0 - 6, toSY(v));
+  for (const v of ticks(ylo, yhi, tstep)) ctx.fillText(fmtTick(v, tstep), x0 - 6, toSY(v));
   ctx.fillStyle = INK; ctx.font = `italic ${Math.round(14*FS)}px ${font}`;
   ctx.textAlign = 'right'; ctx.textBaseline = 'top'; ctx.fillText('x (cm)', x0 + P, y0 + P + 20);
   ctx.save(); ctx.translate(x0 - 30, y0); ctx.rotate(-Math.PI/2); ctx.textAlign = 'right'; ctx.textBaseline = 'middle'; ctx.fillText('y (cm)', 0, 0); ctx.restore();

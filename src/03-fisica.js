@@ -27,9 +27,9 @@ function nearestSource(x, y){
 const nearestDist = (x, y) => nearestSource(x, y)[0];
 
 const gridT = new Float64Array(NT*NT), gridS = new Float64Array(NS*NS);
-function fillGrid(g, N){
-  const h = 2*L/(N-1);
-  for (let j = 0; j < N; j++){ const y = -L + j*h; for (let i = 0; i < N; i++) g[j*N + i] = potential(-L + i*h, y); }
+function fillGrid(g, N, w = VIEW0){
+  const h = 2*w.h/(N-1), x0 = w.cx - w.h, y0 = w.cy - w.h;
+  for (let j = 0; j < N; j++){ const y = y0 + j*h; for (let i = 0; i < N; i++) g[j*N + i] = potential(x0 + i*h, y); }
 }
 
 /* ================= marching squares ================= */

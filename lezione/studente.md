@@ -290,9 +290,17 @@ Esistono sistemi in cui ogni moto termina in modo semplice, senza caos, eppure �
 
 **Più attrattori.** Dentro l'anello di cariche positive mettiamo tre cariche negative. Con l'attrito, la carica di prova lasciata ferma in un punto qualsiasi finisce sempre su una delle tre: ci sono tre attrattori, e per ogni punto di partenza il destino è uno solo.
 
+**Prima prova a indovinare.** Lascia la carica ferma in un punto: su quale delle tre cariche negative andrà a finire? Viene spontaneo rispondere «sulla più vicina», e spesso è vero. Non sempre, però.
+
+> **Prova sul laboratorio.** Scheda 3 → «Prova: tre attrattori». Le tre cariche negative si chiamano A, B e C. Clicca sulla mappa: la carica di prova parte da ferma e, quando arriva, il punto da cui è partita si colora come la carica su cui è finita. Fai qualche prova dove vuoi.
+
+> **Esperimento.** Nel riquadro «Scommessa» premi «Evidenzia» sul punto 1: compare un anello numerato sulla mappa. Scommetti su dove finirà la carica, poi clicca sull'anello per lanciarla. Continua con i punti successivi. Quali risultati ti hanno sorpreso? Che cosa succede al centro (punto 7)? E ai punti 8 e 9, distanti appena 1 cm?
+
+Colorando a mano tanti punti di partenza si comincia a vedere un disegno: le zone di un colore non sono semplicemente «i punti più vicini ad A».
+
 > **Definizione.** Il **bacino di attrazione** di un attrattore è l'insieme dei punti di partenza le cui traiettorie finiscono su quell'attrattore.
 
-Per disegnarlo il laboratorio fa partire una carica da ciascuno di 10 000 punti (o 22 500 nella versione «Fine»), segue ogni moto fino alla fine e colora il punto di partenza con il colore della carica su cui la carica di prova è caduta.
+Per disegnarlo il laboratorio fa da solo quello che hai fatto a mano: fa partire una carica da ciascuno di 10 000 punti (o 22 500 nella versione «Fine»), segue ogni moto fino alla fine e colora il punto di partenza con il colore della carica su cui la carica di prova è caduta.
 
 ![La mappa dei bacini nel laboratorio](../figure/f9_bacini_2d.png)
 
@@ -304,13 +312,15 @@ Guarda la mappa: vicino a ogni carica c'è una zona grande di un solo colore, do
 
 *Figura 14 – Un quadrato di 2 × 2 cm vicino all'anello, ricalcolato con 32 400 partenze: il confine è formato da strisce sempre più fini. È un frattale.*
 
+> **Prova sul laboratorio.** Sotto la mappa dei bacini premi «Ingrandisci un riquadro» e trascina un quadrato su un confine lontano dalle cariche, poi «Calcola la mappa qui». Ripeti su un confine dentro il quadrato ingrandito: le strisce si ripetono? «Indietro» torna allo zoom precedente.
+
 > **Definizione.** Un **frattale** è una figura che mostra nuovi dettagli a ogni ingrandimento.
 
 Il confine tra i bacini è di questo tipo: per quanto precisa sia la misura del punto di partenza, vicino al confine l'errore può bastare per cambiare il destino finale. Lo stesso disegno compare nel «pendolo magnetico», un pendolo che oscilla sopra tre calamite, e perfino nella matematica pura, quando si risolve l'equazione z³ = 1 con il metodo di Newton.
 
 > **Idea chiave.** Un sistema può essere semplice in ogni sua parte (nessun caos nel moto) e tuttavia imprevedibile nel risultato: se il confine tra i bacini è un frattale, nessuna precisione finita sulla partenza garantisce di conoscere la meta.
 
-> **Prova sul laboratorio.** Scheda 3 → «Prova: tre attrattori». La mappa si costruisce da sola in una decina di secondi. Rifalla con «Fine» e confronta i confini.
+> **Prova sul laboratorio.** Dopo le prove a mano premi «Calcola la mappa»: in una decina di secondi compare la mappa completa, e ogni punto che hai provato cade nella zona del suo colore. Rifalla con «Fine» e confronta i confini.
 
 > **Esperimento.** Cambia il coefficiente γ dell'attrito (prima 0,1 s⁻¹, poi 0,4 s⁻¹) e ricalcola la mappa. Con meno attrito i confini diventano più intricati o più semplici? Perché?
 
@@ -332,3 +342,4 @@ Tra parentesi la sezione a cui si riferisce ogni domanda. Dove serve, usa k = 8,
 10. (8) Se misuri la posizione iniziale dieci volte meglio, puoi prevedere il moto caotico per un tempo dieci volte più lungo?
 11. (9) Nella mappa dei bacini, perché vicino ai confini è impossibile dire su quale carica finirà la carica di prova?
 12. (9, sul laboratorio) Ricalcola la mappa dei bacini con γ = 0,1 s⁻¹ e con γ = 0,4 s⁻¹. Come cambiano i confini?
+13. (9, sul laboratorio) Il punto sfida 4, (−1,5; −6), è più vicino a B e a C che ad A, eppure la carica finisce su A. Come è possibile?

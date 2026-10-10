@@ -15,10 +15,13 @@ const FONT = () => getComputedStyle(document.body).fontFamily;
 const state = {
   vmax: 1000, nlev: 10, field: 'none',
   fill: true, hlZero: true, hlProbe: true, labels: true, snap: true, floor: true,
-  autoRot: false, tool: 'add', newSign: 1, newMag: 2, probe: null, right: '3d',
+  autoRot: false, clickLaunch: false, basinFollow: true, tool: 'add', newSign: 1, newMag: 2, probe: null, right: '3d',
   cam: { az: -0.62, el: 0.52, zoom: 1 }
 };
 const CAM0 = { az: -0.62, el: 0.52, zoom: 1 };
+// finestra della mappa 2D: centro (cx, cy) e semilato h, in cm (zoom)
+const VIEW0 = { cx: 0, cy: 0, h: L }, HMIN = 0.05;
+let view = { ...VIEW0 };
 let charges = [], selected = null, nextId = 1;
 function addCharge(x, y, q){
   if (charges.length >= MAX_CHARGES){ toast(`Puoi inserire al massimo ${MAX_CHARGES} cariche`); return null; }

@@ -125,14 +125,15 @@ Incontro C, circa 30 minuti. Un sistema perfettamente deterministico può essere
 
 ## 9 · Bacini di attrazione frattali
 
-Incontro C, circa 20 minuti. Anche quando ogni moto finisce in modo semplice, prevedere quale fine avrà può essere impossibile: i confini tra i destini sono frattali.
+Incontro C, circa 25 minuti. Anche quando ogni moto finisce in modo semplice, prevedere quale fine avrà può essere impossibile: i confini tra i destini sono frattali.
 
-- **9.1 Più attrattori.** Tre cariche negative e attrito viscoso: la carica di prova finisce sempre su una delle tre.
-- **9.2 Bacino di attrazione.** L'insieme dei punti di partenza che portano allo stesso attrattore. La mappa ne colora 10 000, ognuno simulato fino alla fine.
-- **9.3 Due zone.** Vicino alle cariche, bacini grandi e regolari. Lontano, strisce dei tre colori intrecciate a ogni scala.
-- **9.4 Frattale.** Ingrandendo un confine compaiono sempre nuovi dettagli: è un oggetto con dimensione non intera.
-- **9.5 Conseguenza.** Vicino a un confine un errore piccolissimo sul punto di partenza cambia il destino finale, anche se il moto non è caotico per sempre.
-- **Laboratorio:** scheda 3, «Prova: tre attrattori»; la mappa si calcola da sola in circa 10 secondi. Rifarla in risoluzione «Fine» e confrontare i confini.
+- **9.1 Più attrattori.** Tre cariche negative, A, B e C, e attrito viscoso: la carica di prova finisce sempre su una delle tre.
+- **9.2 Prima la scommessa, poi la mappa.** Qualche prova libera: un clic, la carica parte da ferma e il punto di partenza si colora come la carica su cui finisce. Poi si scommette sui punti sfida, prima quelli ovvi (1–3), poi quelli ingannevoli (4–6): partono vicini a una carica e finiscono su quella più lontana. Infine il centro (7), dove la carica resta ferma, e due partenze a 1 cm l'una dall'altra (8–9) che finiscono su cariche diverse.
+- **9.3 Bacino di attrazione.** L'insieme dei punti di partenza che portano allo stesso attrattore. La mappa fa lo stesso lavoro delle prove a mano su 10 000 punti, ognuno simulato fino alla fine.
+- **9.4 Due zone.** Vicino alle cariche, bacini grandi e regolari. Lontano, strisce dei tre colori intrecciate a ogni scala.
+- **9.5 Frattale.** Ingrandendo un confine compaiono sempre nuovi dettagli: è un oggetto con dimensione non intera.
+- **9.6 Conseguenza.** Vicino a un confine un errore piccolissimo sul punto di partenza cambia il destino finale, anche se il moto non è caotico per sempre.
+- **Laboratorio:** scheda 3, «Prova: tre attrattori». Prima cinque minuti di prove libere, poi la «Scommessa»: «Evidenzia» un punto, si vota per alzata di mano su A, B o C, uno studente clicca sull'anello numerato. Solo dopo, «Calcola la mappa» (circa 10 secondi): ogni punto provato cade nella zona del suo colore. Infine «Ingrandisci un riquadro» su un confine lontano dalle cariche e «Calcola la mappa qui»: le strisce si ripetono.
 - **Collegamenti:** il pendolo magnetico, i bacini del metodo di Newton per z³ = 1, l'insieme di Mandelbrot.
 - **Domanda guida:** che cosa hanno in comune un pendolo magnetico e le previsioni del tempo?
 

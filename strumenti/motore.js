@@ -11,7 +11,7 @@ const PURI = ['01-costanti.js', '02-colori-formati.js', '03-fisica.js', '04-dina
 // Funzioni dell'interfaccia richiamate dal motore: qui non fanno nulla.
 const STUB = `
   let needTop = false;
-  const toast = () => {}, redraw = () => {}, schedule = () => {}, updateTestUI = () => {}, updateBasinUI = () => {};
+  const toast = () => {}, redraw = () => {}, schedule = () => {}, updateTestUI = () => {}, updateBasinUI = () => {}, trialDone = () => {};
   const setDamp = (mode, gamma, vstar) => { sim.damp = mode; if (gamma != null) sim.gamma = gamma; if (vstar != null) sim.vstar = vstar; };
 `;
 

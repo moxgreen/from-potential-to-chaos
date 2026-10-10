@@ -95,6 +95,7 @@
           <button data-v="add" class="on">Nuova carica</button>
           <button data-v="test">Carica di prova</button>
           <button data-v="probe">Sonda</button>
+          <button data-v="zoom">Ingrandisci</button>
         </div>
         <div class="grid2">
           <label>Segno delle nuove cariche
@@ -268,17 +269,40 @@
       <section class="block concept theory">
         <h3><span class="num">2</span>Bacino di attrazione</h3>
         <p>Quando gli attrattori sono più di uno, ogni stato iniziale finisce su uno di essi. Gli stati che portano allo stesso attrattore formano il suo <b>bacino di attrazione</b>.</p>
-        <p>Qui tre cariche negative attirano la carica di prova e l'attrito la fa cadere su una delle tre. La mappa colora ogni punto di partenza (da fermo) secondo la carica su cui finisce: vicino alle cariche i bacini sono regioni semplici, lontano i confini si intrecciano in modo frattale, come nel pendolo magnetico.</p>
+        <p>Qui tre cariche negative, A, B e C, attirano la carica di prova e l'attrito la fa cadere su una delle tre. Su quale? Prima di calcolare la mappa, prova a indovinarlo.</p>
         <button class="btn try" data-s="bacini">Prova: tre attrattori</button>
+        <h4>Prove a mano</h4>
+        <p class="muted" style="margin:0">Clicca sulla mappa: la carica parte da ferma e, quando arriva su un attrattore, il suo punto di partenza si colora come lui.</p>
+        <label class="check"><input type="checkbox" id="optLaunch"> Un clic sulla mappa = una prova da ferma</label>
+        <div class="legend" id="basinLegend"></div>
+        <p class="muted" id="trialStatus" style="margin:6px 0 0"></p>
+        <div class="row" style="margin-top:6px"><button class="btn" id="marksClear">Cancella i punti provati</button></div>
+        <div id="chalBox" hidden>
+          <h4>Scommessa</h4>
+          <p class="muted" style="margin:0">Evidenzia un punto e scommetti: su quale carica andrà a finire? Poi mettici la carica, cliccando sull'anello numerato.</p>
+          <ol class="chal" id="chalList"></ol>
+        </div>
         <h4>Mappa dei bacini</h4>
-        <div class="row">
+        <p class="muted" style="margin:0">La mappa colora ogni punto di partenza (da fermo) secondo l'attrattore su cui finisce: vicino alle cariche i bacini sono regioni semplici, lontano i confini si intrecciano in modo frattale, come nel pendolo magnetico.</p>
+        <div class="row" style="margin-top:8px">
           <button class="btn" id="basinGo">Calcola la mappa</button>
           <div class="seg" id="basinRes"><button data-v="60">Rapida</button><button data-v="100" class="on">Media</button><button data-v="150">Fine</button></div>
         </div>
         <div class="progress"><div id="basinBar"></div></div>
         <p class="muted" id="basinStatus" style="margin:6px 0 0">Vale per le cariche e l'attrito attuali; serve l'attrito viscoso.</p>
         <label class="check"><input type="checkbox" id="optBasin" checked> Mostra la mappa sulle isoipse</label>
-        <div class="legend" id="basinLegend"></div>
+        <h4>Zoom sulla mappa</h4>
+        <div class="row">
+          <button class="btn" id="zoomTool">Ingrandisci un riquadro</button>
+          <button class="btn" id="zoomIn" title="Ingrandisci ×2 al centro">+</button>
+          <button class="btn" id="zoomOut" title="Riduci ×2">−</button>
+          <button class="btn" id="zoomBack" title="Torna allo zoom precedente (Esc)">Indietro</button>
+          <button class="btn" id="zoomAll">Tutta la mappa</button>
+          <button class="btn primary" id="zoomCalc">Calcola la mappa</button>
+        </div>
+        <label class="check"><input type="checkbox" id="optFollow" checked> Ricalcola la mappa dopo ogni zoom</label>
+        <p class="muted" id="zoomStatus" style="margin:6px 0 0"></p>
+        <p class="note">Con «Ingrandisci un riquadro» trascina un quadrato sulla mappa; un clic semplice ingrandisce ×2 attorno al punto. Funziona anche la rotella con Ctrl, ⌘ o Maiusc. Se la mappa è visibile, dopo lo zoom si ricalcola da sola nella nuova finestra, con lo stesso numero di partenze per lato e quindi con più dettaglio; altrimenti premi «Calcola la mappa qui». I confini tra i bacini si intrecciano anche alle scale più piccole. Sotto qualche centesimo di millimetro la struttura continua, ma il calcolo numerico non è più affidabile e l'ingrandimento si ferma.</p>
       </section>
 
       <section class="block concept theory">

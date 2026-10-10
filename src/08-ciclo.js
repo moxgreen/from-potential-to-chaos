@@ -6,7 +6,7 @@ function redraw(){ needTop = need3D = true; schedule(); }
 function frame(ts){
   rafPending = false;
   if (physicsDirty){
-    fillGrid(gridT, NT); fillGrid(gridS, NS);
+    fillGrid(gridT, NT, view); fillGrid(gridS, NS);
     buildContours(); updateHeat();
     if (state.field === 'lines') computeFieldLines();
     refreshTests();

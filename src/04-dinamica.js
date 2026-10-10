@@ -62,10 +62,10 @@ function advance(p, T){
   let t = 0, guard = 0;
   while (t < T && guard++ < 50000){
     const [d, idx] = nearestSource(p.x, p.y);
-    if (d < HIT_R){ p.status = 'hit'; p.note = 'urto con Q' + (idx + 1); return; }
+    if (d < HIT_R){ p.status = 'hit'; p.note = 'urto con Q' + (idx + 1); trialEnd(p, 'q', idx, charges[idx].x, charges[idx].y); return; }
     if (Math.abs(p.x) > 1.25*L || Math.abs(p.y) > 1.25*L){ p.status = 'out'; return; }
     let [h, v, a] = stepSize(p, d, 0.01);
-    if (sim.damp === 'visc' && v < 0.003 && a < 0.003){ p.status = 'rest'; return; }
+    if (sim.damp === 'visc' && v < 0.003 && a < 0.003){ p.status = 'rest'; trialEnd(p, 'eq', -1, p.x, p.y); return; }
     h = Math.min(h, T - t);
     rk4(p, h); t += h;
     const n = p.trail.length, dx = p.x - p.trail[n-2], dy = p.y - p.trail[n-1];
