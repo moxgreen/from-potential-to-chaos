@@ -43,7 +43,18 @@ def md_to_html(s):
     h=markdown.markdown(s,extensions=['tables'])
     h=re.sub(r'<p>\s*(<img class="fig"[^>]*>)\s*</p>',r'\1',h)
     h=re.sub(r'<p>\s*(<div class="formula">.*?</div>)\s*</p>',r'\1',h,flags=re.S)
-    h=h.replace('<blockquote>','<aside class="tip">').replace('</blockquote>','</aside>')
+    # riquadri: paragrafi consecutivi con «>» formano un solo blockquote, quindi si separa a ogni etichetta
+    KIND={'Idea chiave':'key','Definizione':'def','Prova sul laboratorio':'lab','Misura':'lab','Esperimento':'lab','Curiosità':'curio'}
+    def aside(m):
+        pieces=re.split(r'(?=<p><strong>(?:%s)\.</strong>)'%'|'.join(KIND),m.group(1))
+        out=''
+        for p in pieces:
+            if not p.strip(): continue
+            k=re.match(r'<p><strong>([^<.]*)\.</strong>',p)
+            cls=' '+KIND[k.group(1)] if k and k.group(1) in KIND else ''
+            out+=f'<aside class="tip{cls}">{p.strip()}</aside>'
+        return out
+    h=re.sub(r'<blockquote>(.*?)</blockquote>',aside,h,flags=re.S)
     parts=re.split(r'(<[^>]+>)',h)
     for i,p in enumerate(parts):
         if not p.startswith('<'):

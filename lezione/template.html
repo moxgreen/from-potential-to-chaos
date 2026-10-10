@@ -52,6 +52,17 @@
   svg.path a:hover rect{stroke-width:2}
   aside.tip{margin:12px 0;padding:10px 14px;border-left:4px solid var(--stu);background:var(--stu-bg);border-radius:0 8px 8px 0}
   aside.tip p{margin:0}
+  aside.tip::before{display:block;font-family:var(--sans);font-size:11.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;margin-bottom:2px;color:var(--stu)}
+  aside.tip.key{border-left-width:6px;background:#e3f4f0;padding:12px 16px;font-size:1.03em}
+  aside.tip.key::before{content:"Idea chiave"}
+  aside.tip.key strong:first-child{display:none}
+  aside.tip.def{border-left-color:#2052c9;background:#eef3fd}
+  aside.tip.def::before{content:"Definizione";color:#2052c9}
+  aside.tip.def strong:first-child{display:none}
+  aside.tip.lab{background:#fff;border:1px dashed var(--stu-rule);border-left:4px solid var(--stu)}
+  aside.tip.curio{border-left-color:var(--rel);background:var(--rel-bg)}
+  aside.tip.curio::before{content:"Curiosità";color:var(--rel)}
+  aside.tip.curio strong:first-child{display:none}
   details.lvl{margin:12px 0 0;border:1px solid var(--rule);border-radius:10px;overflow:hidden}
   details.lvl > summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;padding:9px 14px;font-family:var(--sans);font-size:15px;font-weight:600}
   details.lvl > summary::-webkit-details-marker{display:none}
@@ -86,7 +97,7 @@
     main{padding:0;max-width:none}
     section.tappa{border:none;padding:0;margin:0 0 14pt;break-inside:auto}
     details.lvl > summary .hint{display:none}
-    img.fig, .formula, svg.path, table{break-inside:avoid}
+    img.fig, .formula, svg.path, table, aside.tip{break-inside:avoid}
     h2,h3{break-after:avoid}
     body.student section.tappa{break-before:page}
     body.student section.tappa:first-of-type{break-before:auto}
