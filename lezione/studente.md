@@ -12,7 +12,7 @@ Il testo accompagna il Laboratorio del potenziale elettrostatico: leggi una sezi
 
 ## Come usare il laboratorio
 
-Il laboratorio è la tua lente d'ingrandimento: una pagina web che calcola il potenziale e il moto delle cariche mentre le sposti con il mouse. A sinistra trovi la mappa vista dall'alto, a destra un secondo grafico (la superficie in tre dimensioni oppure lo spazio delle fasi), sotto una barra di comandi, e sul lato destro tre schede che corrispondono alle parti di questo testo.
+Il laboratorio è un esperimento numerico: una pagina web che risolve, passo dopo passo, le stesse equazioni che scriveremo su carta, e rende visibile ciò che in un'aula non si può osservare direttamente, il potenziale, il campo e il moto di una carica, mentre sposti le cariche con il mouse. Non sostituisce il ragionamento: lo mette alla prova, perché ogni previsione che formuli può essere confrontata subito con il calcolo. A sinistra trovi la mappa vista dall'alto, a destra un secondo grafico (la superficie in tre dimensioni oppure lo spazio delle fasi, ma per ora non te ne preoccupare: lo vedremo in seguito), sotto una barra di comandi, e sul lato destro tre schede che corrispondono alle parti di questo testo. Non farti spaventare dai tanti pulsanti, cursori e menu: li proveremo piano piano, uno alla volta, solo quando serviranno.
 
 ![L'interfaccia del laboratorio](../figure/f0_interfaccia.png)
 
@@ -25,7 +25,7 @@ Il laboratorio è la tua lente d'ingrandimento: una pagina web che calcola il po
 | cambiare il valore di una carica | rotella del mouse sopra la carica, oppure il cursore nella scheda 1 |
 | misurare V e il campo in un punto | passa con il mouse sulla mappa: i valori compaiono sotto la mappa |
 | ruotare la superficie 3D | trascina il grafico di destra; la rotella fa lo zoom |
-| far partire una simulazione | «Avvia» nella barra sotto i grafici, oppure la barra spaziatrice |
+| far partire una simulazione | «Avvia» nella barra sotto i grafici, oppure la barra spaziatrice. *Per ora non farlo ancora: ci arriveremo per gradi, dalla sezione 4.* |
 | vedere un solo grafico in grande | «Solo 2D» o «Solo 3D», poi «Schermo intero» (tasto F, Esc per uscire) |
 
 Le unità sono sempre le stesse: distanze in centimetri, cariche in nanocoulomb (1 nC = 10⁻⁹ C), potenziale in volt, campo in V/m.
