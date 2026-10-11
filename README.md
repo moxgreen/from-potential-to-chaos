@@ -2,8 +2,8 @@
 
 ## Apri e usa
 
-- **[Simulatore](dist/potenziale-cariche.html)**: il laboratorio interattivo, si usa direttamente nel browser.
-- **[Lezione](dist/lezione-dal-potenziale-al-caos.html)**: canovaccio, note per il relatore e testo per lo studente.
+- **[Simulatore](https://moxgreen.github.io/from-potential-to-chaos/dist/potenziale-cariche.html)**: il laboratorio interattivo, si usa direttamente nel browser.
+- **[Lezione](https://moxgreen.github.io/from-potential-to-chaos/dist/lezione-dal-potenziale-al-caos.html)**: canovaccio, note per il relatore e testo per lo studente.
 
 Sono due file HTML autonomi, senza server né connessione: basta aprirli nel browser (da GitHub Pages, oppure scaricandoli e facendo doppio clic).
 
