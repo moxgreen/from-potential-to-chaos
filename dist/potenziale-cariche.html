@@ -1,0 +1,2062 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Laboratorio del potenziale elettrostatico</title>
+<style>
+  :root{
+    --bg:#eaf0f6; --paper:#ffffff; --ink:#142a4c; --muted:#5d6b82; --rule:#d5dde9; --soft:#f1f5fa;
+    --pos:#d7301f; --neg:#2052c9;
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua","URW Palladio L",Georgia,serif;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  [hidden]{display:none !important}
+  html,body{margin:0;height:100%}
+  body{
+    background-color:var(--bg);
+    background-image:linear-gradient(rgba(20,42,76,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(20,42,76,.045) 1px,transparent 1px);
+    background-size:24px 24px;
+    color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.45;overflow:hidden;
+  }
+
+  /* ---------- impaginazione: grafici a sinistra, schede a destra ---------- */
+  .app{display:grid;grid-template-columns:minmax(0,1fr) clamp(340px,27vw,450px);grid-template-rows:auto minmax(0,1fr);height:100vh;height:100dvh}
+  header{grid-column:1/-1;display:flex;align-items:baseline;gap:2px 20px;flex-wrap:wrap;padding:10px 20px 8px}
+  h1{font-family:var(--serif);font-weight:600;font-size:clamp(20px,2vw,30px);line-height:1.1;margin:0}
+  header p{margin:0;color:var(--muted);font-family:var(--serif);font-size:clamp(14px,1.1vw,17px)}
+
+  .stagearea{display:flex;flex-direction:column;gap:8px;min-height:0;min-width:0;padding:0 10px 12px 16px}
+  .views{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+  .stagearea.only-2d .views,.stagearea.only-3d .views{grid-template-columns:minmax(0,1fr)}
+  .stagearea.only-2d #view3d,.stagearea.only-3d #view2d{display:none}
+  .stagearea:fullscreen{background:var(--bg);padding:12px;width:100vw;height:100vh}
+  .stagearea:-webkit-full-screen{background:var(--bg);padding:12px;width:100vw;height:100vh}
+  .stagearea.pseudo-fs{position:fixed;inset:0;z-index:100;background:var(--bg);padding:12px}
+
+  .view{background:var(--paper);border:1px solid var(--rule);border-radius:10px;display:flex;flex-direction:column;min-width:0;min-height:0}
+  .view-head{display:flex;align-items:center;justify-content:space-between;gap:6px 10px;padding:8px 12px 6px;flex-wrap:wrap}
+  .view-head h2{margin:0;font-family:var(--serif);font-size:clamp(15px,1.2vw,19px);font-weight:600}
+  .view-head .hint{color:var(--muted);font-size:12.5px}
+  .stage{position:relative;flex:1;min-height:220px}
+  .stage canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
+  #top{cursor:crosshair}
+  #top.over-charge{cursor:grab}
+  #top.zooming{cursor:zoom-in}
+  #top.dragging,#three.dragging{cursor:grabbing}
+  #three.rotatable{cursor:grab}
+  .view-foot{border-top:1px solid var(--rule);padding:6px 12px 8px;color:var(--muted);font-size:13px;min-height:36px;display:flex;align-items:center;gap:4px 16px;flex-wrap:wrap}
+  .readout span.v{font-variant-numeric:tabular-nums;color:var(--ink);font-weight:600}
+  .readout i{font-family:var(--serif);font-size:15px;color:var(--ink)}
+
+  .simbar{background:var(--paper);border:1px solid var(--rule);border-radius:10px;padding:7px 10px;display:flex;align-items:center;justify-content:space-between;gap:8px 14px;flex-wrap:wrap}
+  .pill{font-size:12.5px;background:#fff4e5;color:#7a4a00;border:1px solid #f0d3a6;border-radius:999px;padding:3px 10px}
+
+  /* ---------- pannello laterale con schede ---------- */
+  .side{min-height:0;overflow-y:auto;background:var(--paper);border-left:1px solid var(--rule)}
+  .tabs{position:sticky;top:0;z-index:3;background:var(--paper);display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid var(--rule)}
+  .tabs button{border:none;background:none;cursor:pointer;padding:11px 6px 9px;color:var(--muted);font-size:13px;line-height:1.25;border-bottom:3px solid transparent;text-align:center}
+  .tabs button b{display:block;font-family:var(--serif);font-size:17px;color:inherit}
+  .tabs button:hover{background:var(--soft)}
+  .tabs button.on{color:var(--ink);border-bottom-color:var(--ink);font-weight:600}
+  .tabpanel{padding:2px 18px 30px}
+  .block{padding:14px 0 16px;border-bottom:1px solid var(--rule)}
+  .block:last-child{border-bottom:none}
+  .block h3{margin:0 0 10px;font-family:var(--serif);font-size:18px;font-weight:600}
+  .block h4{margin:14px 0 6px;font-size:14px;font-weight:600}
+  .lead{font-family:var(--serif);font-size:16px;line-height:1.55;margin:0}
+  .muted{color:var(--muted);font-size:14px}
+  .row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .between{justify-content:space-between}
+  label.check{display:flex;align-items:center;gap:8px;margin:5px 0;font-size:14px;cursor:pointer}
+  .field{margin:10px 0 2px;display:flex;justify-content:space-between;align-items:baseline;font-size:14px}
+  .field output{font-variant-numeric:tabular-nums;font-weight:600}
+  input[type=range]{width:100%;accent-color:var(--ink)}
+  input[type=checkbox]{accent-color:var(--ink);width:16px;height:16px}
+  input[type=number]{width:100%;font:inherit;font-size:14px;padding:5px 7px;border:1px solid var(--rule);border-radius:6px;color:var(--ink);font-variant-numeric:tabular-nums}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+  .grid2 label{font-size:13px;color:var(--muted);display:flex;flex-direction:column;gap:3px}
+
+  button{font:inherit}
+  .btn{border:1px solid var(--rule);background:#fff;color:var(--ink);padding:6px 11px;border-radius:7px;font-size:13.5px;cursor:pointer;line-height:1.2}
+  .btn:hover{background:var(--soft)}
+  .btn.danger{color:#a3241a}
+  .btn.on{background:var(--ink);border-color:var(--ink);color:#fff}
+  .btn.primary{background:var(--ink);border-color:var(--ink);color:#fff;min-width:86px}
+  .btn.primary:hover{background:#22406f}
+  .seg{display:inline-flex;border:1px solid var(--rule);border-radius:8px;overflow:hidden;flex-wrap:nowrap}
+  .seg button{border:none;background:#fff;color:var(--ink);padding:6px 10px;font-size:13px;cursor:pointer;border-left:1px solid var(--rule);white-space:nowrap}
+  .seg button:first-child{border-left:none}
+  .seg button:hover{background:var(--soft)}
+  .seg button.on{background:var(--ink);color:#fff}
+  button:focus-visible,input:focus-visible{outline:2px solid var(--neg);outline-offset:2px}
+
+  .presets{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+  .presets .btn{text-align:left}
+  .chips{display:flex;flex-direction:column;gap:3px;max-height:220px;overflow:auto;margin-top:6px}
+  .chip{display:flex;align-items:center;gap:8px;border:1px solid transparent;background:none;padding:3px 8px;border-radius:7px;cursor:pointer;color:var(--ink);font-size:13.5px;text-align:left}
+  .chip:hover{background:var(--soft)}
+  .chip.sel{border-color:var(--ink);background:var(--soft)}
+  .chip span{color:var(--muted);font-variant-numeric:tabular-nums}
+  .chip b{font-variant-numeric:tabular-nums;min-width:56px}
+  .dot{width:12px;height:12px;border-radius:50%;display:inline-block;flex:none}
+  .dot.p{background:var(--pos)} .dot.n{background:var(--neg)} .dot.z{background:#8a93a6}
+  .badge{font-family:var(--serif);font-size:20px;font-weight:600}
+
+  .theory p,.theory li{font-family:var(--serif);font-size:15.5px;line-height:1.55}
+  .theory p{margin:0 0 8px}
+  .theory ul{margin:6px 0 0;padding-left:18px}
+  .theory li{margin-bottom:6px}
+  .formula{font-family:var(--serif);font-size:20px;text-align:center;margin:8px 0 10px;white-space:nowrap}
+  .frac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;margin:0 3px;font-size:17px}
+  .frac>span:first-child{border-bottom:1px solid var(--ink);padding:0 3px}
+  .note{font-size:13px;color:var(--muted);margin-top:10px;font-family:var(--sans);line-height:1.45}
+
+  .energy{width:100%;border-collapse:collapse;margin-top:10px;font-size:14px}
+  .energy td{padding:5px 0;border-bottom:1px solid var(--rule)}
+  .energy td i{font-family:var(--serif);font-size:15px}
+  .energy td:last-child{text-align:right;font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap;padding-left:10px}
+  .energy tr.tot td{border-bottom:none;border-top:1.5px solid var(--ink)}
+
+  .tpresets{display:grid;grid-template-columns:1fr;gap:7px}
+  .tp{display:flex;flex-direction:column;gap:2px;text-align:left;border:1px solid var(--rule);background:#fff;border-radius:8px;padding:8px 11px 9px;cursor:pointer;color:var(--ink)}
+  .tp:hover{background:var(--soft)}
+  .tp b{font-family:var(--serif);font-size:15.5px;font-weight:600}
+  .tp span{font-size:12.5px;color:var(--muted);line-height:1.35}
+
+  .concept h3{display:flex;align-items:baseline;gap:8px}
+  .concept h3 .num{font-family:var(--sans);font-size:12px;color:#fff;background:var(--ink);border-radius:999px;padding:2px 8px;transform:translateY(-2px)}
+  .concept .btn.try{margin-top:4px}
+  .legend{display:flex;flex-direction:column;gap:3px;margin-top:8px;font-size:13.5px}
+  .legend span.sw,#trialStatus .sw,.chal .sw{width:14px;height:14px;border-radius:3px;display:inline-block;margin-right:8px;vertical-align:-2px;border:1px solid rgba(0,0,0,.15)}
+  .chal{list-style:none;padding:0;margin:6px 0 0;display:flex;flex-direction:column;gap:5px;font-size:13.5px}
+  .chal li{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:3px 6px;border-radius:7px;border:1px solid transparent}
+  .chal li.cur{border-color:var(--ink);background:var(--soft)}
+  .chal .pt{min-width:118px;font-variant-numeric:tabular-nums}
+  .chal .res{flex-basis:100%;padding-left:4px;color:var(--ink)}
+  .chal .res:empty{display:none}
+  .btn.sm{padding:3px 8px;font-size:12.5px}
+  .progress{height:6px;background:var(--soft);border-radius:3px;overflow:hidden;margin-top:8px}
+  .progress>div{height:100%;width:0;background:var(--ink);transition:width .2s}
+
+  .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:9px 16px;border-radius:8px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:200;max-width:90vw;text-align:center}
+  .toast.show{opacity:1}
+  @media (prefers-reduced-motion:reduce){.toast,.progress>div{transition:none}}
+
+  @media (max-width:1100px){
+    body{overflow:auto}
+    .app{grid-template-columns:1fr;grid-template-rows:auto auto auto;height:auto}
+    .stagearea{height:82vh;height:82dvh;padding:0 10px 10px}
+    .side{border-left:none;border-top:1px solid var(--rule);overflow:visible}
+    .tabs{position:sticky}
+  }
+  @media (max-width:640px){ .view-head .hint{display:none} }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>Laboratorio del potenziale elettrostatico</h1>
+    <p>Dalle linee equipotenziali al moto delle cariche, fino al caos</p>
+  </header>
+
+  <div class="stagearea" id="stageArea">
+    <div class="views">
+      <article class="view" id="view2d">
+        <div class="view-head">
+          <h2>Isoipse, vista dall'alto</h2>
+          <span class="hint">Trascina per spostare · rotella su una carica per cambiare q</span>
+        </div>
+        <div class="stage" id="topStage"><canvas id="top" aria-label="Mappa delle linee equipotenziali"></canvas></div>
+        <div class="view-foot readout">
+          <span>Sonda:</span>
+          <span><i>x</i> = <span class="v" id="rx">—</span></span>
+          <span><i>y</i> = <span class="v" id="ry">—</span></span>
+          <span><i>V</i> = <span class="v" id="rv">—</span></span>
+          <span>|<i>E</i>| = <span class="v" id="re">—</span></span>
+        </div>
+      </article>
+
+      <article class="view" id="view3d">
+        <div class="view-head">
+          <h2 id="rightTitle">Superficie del potenziale in 3D</h2>
+          <div class="row">
+            <div class="seg" id="rightSeg"><button data-v="3d" class="on">Superficie 3D</button><button data-v="phase">Spazio delle fasi</button></div>
+            <span class="row" id="camTools">
+              <button class="btn" id="camReset">Vista iniziale</button>
+              <button class="btn" id="camTop">Dall'alto</button>
+              <button class="btn" id="camSpin" aria-pressed="false">Ruota</button>
+            </span>
+          </div>
+        </div>
+        <div class="stage" id="threeStage"><canvas id="three" aria-label="Grafico di destra"></canvas></div>
+        <div class="view-foot" id="rightFoot"><span>Trascina per ruotare, rotella per lo zoom. Oltre ±V<sub>max</sub> la superficie è troncata.</span></div>
+      </article>
+    </div>
+
+    <div class="simbar">
+      <div class="row">
+        <button class="btn primary" id="simPlay">Avvia</button>
+        <button class="btn" id="simReset">Ricomincia</button>
+        <div class="seg" id="speedSeg">
+          <button data-v="0.5">½×</button><button data-v="1" class="on">1×</button><button data-v="2">2×</button><button data-v="4">4×</button><button data-v="8">8×</button><button data-v="16">16×</button>
+        </div>
+        <span class="muted">t = <b id="simTime">0,0 s</b></span>
+        <span class="pill" id="dampBadge" hidden></span>
+      </div>
+      <div class="row">
+        <div class="seg" id="layoutSeg"><button data-v="both" class="on">2D + 3D</button><button data-v="2d">Solo 2D</button><button data-v="3d" id="layout3dBtn">Solo 3D</button></div>
+        <button class="btn" id="fsBtn">⛶ Schermo intero</button>
+      </div>
+    </div>
+  </div>
+
+  <aside class="side">
+    <nav class="tabs" role="tablist">
+      <button role="tab" data-tab="1" class="on" aria-selected="true"><b>1</b>Il potenziale</button>
+      <button role="tab" data-tab="2" aria-selected="false"><b>2</b>Cariche in moto</button>
+      <button role="tab" data-tab="3" aria-selected="false"><b>3</b>Sistemi dinamici e caos</button>
+    </nav>
+
+    <!-- ===================== SCHEDA 1 ===================== -->
+    <div class="tabpanel" id="tab1" role="tabpanel">
+      <section class="block">
+        <p class="lead">Disponi delle cariche puntiformi nel piano e osserva il potenziale che generano: a sinistra le isoipse (linee equipotenziali), a destra la superficie <i>V</i>(<i>x</i>, <i>y</i>).</p>
+      </section>
+      <section class="block">
+        <h3>Configurazioni</h3>
+        <div class="presets" id="presets">
+          <button class="btn" data-p="dipolo">Dipolo</button>
+          <button class="btn" data-p="uguali">Due cariche uguali</button>
+          <button class="btn" data-p="asimm">Cariche +4 e −1 nC</button>
+          <button class="btn" data-p="singola">Carica singola</button>
+          <button class="btn" data-p="quadrupolo">Quadrupolo</button>
+          <button class="btn" data-p="piani">Due file di cariche</button>
+        </div>
+      </section>
+      <section class="block">
+        <h3>Il clic sulla mappa posiziona</h3>
+        <div class="seg" id="toolSeg">
+          <button data-v="add" class="on">Nuova carica</button>
+          <button data-v="test">Carica di prova</button>
+          <button data-v="probe">Sonda</button>
+          <button data-v="zoom">Ingrandisci</button>
+        </div>
+        <div class="grid2">
+          <label>Segno delle nuove cariche
+            <span class="seg" id="signSeg" style="align-self:flex-start">
+              <button data-v="1" class="on">+ positiva</button>
+              <button data-v="-1">− negativa</button>
+            </span>
+          </label>
+          <label>Intensità |q| (nC)<input type="number" id="newMag" min="0.5" max="10" step="0.5" value="2"></label>
+        </div>
+      </section>
+      <section class="block">
+        <h3>Carica selezionata</h3>
+        <p class="muted" id="noSel">Nessuna carica selezionata. Clicca una carica sulla mappa, oppure clicca un punto vuoto per aggiungerne una.</p>
+        <div id="selBox" hidden>
+          <div class="row between">
+            <span class="badge" id="selName">Q1</span>
+            <div class="row">
+              <button class="btn" id="flip">Inverti segno</button>
+              <button class="btn danger" id="del">Elimina</button>
+            </div>
+          </div>
+          <div class="field"><span>Carica <i>q</i></span><output id="qOut"></output></div>
+          <input type="range" id="qRange" min="-10" max="10" step="0.5">
+          <div class="grid2">
+            <label>x (cm)<input type="number" id="xNum" min="-10" max="10" step="0.1"></label>
+            <label>y (cm)<input type="number" id="yNum" min="-10" max="10" step="0.1"></label>
+          </div>
+        </div>
+      </section>
+      <section class="block">
+        <div class="row between">
+          <h3 style="margin:0">Cariche presenti <span class="muted" id="count"></span></h3>
+          <button class="btn danger" id="clearAll">Rimuovi tutte</button>
+        </div>
+        <div class="chips" id="chips"></div>
+      </section>
+      <section class="block">
+        <h3>Visualizzazione</h3>
+        <div class="field"><span>Scala dei colori ±V<sub>max</sub></span><output id="vmaxOut"></output></div>
+        <input type="range" id="vmax" min="0" max="100" step="1">
+        <div class="field"><span>Isoipse per segno</span><output id="nlevOut"></output></div>
+        <input type="range" id="nlev" min="3" max="25" step="1">
+        <p class="muted" style="margin:4px 0 0">Tra due isoipse vicine: Δ<i>V</i> = <b id="dvOut"></b></p>
+        <h4>Campo elettrico</h4>
+        <div class="seg" id="fieldSeg">
+          <button data-v="none" class="on">Nascosto</button>
+          <button data-v="lines">Linee di campo</button>
+          <button data-v="vectors">Vettori E</button>
+        </div>
+        <h4>Opzioni</h4>
+        <label class="check"><input type="checkbox" id="optFill" checked> Sfondo colorato nella mappa</label>
+        <label class="check"><input type="checkbox" id="optZero" checked> Evidenzia l'isoipsa V = 0</label>
+        <label class="check"><input type="checkbox" id="optProbe" checked> Evidenzia l'isoipsa che passa per la sonda</label>
+        <label class="check"><input type="checkbox" id="optLabels" checked> Mostra il valore delle cariche</label>
+        <label class="check"><input type="checkbox" id="optSnap" checked> Aggancia alla griglia (0,5 cm)</label>
+        <label class="check"><input type="checkbox" id="optFloor" checked> Isoipse proiettate sotto la superficie 3D</label>
+      </section>
+      <section class="block theory">
+        <h3>Il modello</h3>
+        <p>Il potenziale in un punto P è la somma dei contributi di tutte le cariche (principio di sovrapposizione):</p>
+        <div class="formula"><i>V</i>(P) = <i>k</i> Σ <span class="frac"><span><i>q</i><sub>i</sub></span><span><i>r</i><sub>i</sub></span></span>,&nbsp; <span style="font-size:15px"><i>k</i> = 8,99·10<sup>9</sup> N·m²/C²</span></div>
+        <ul>
+          <li>Tra isoipse vicine la differenza di potenziale è sempre la stessa: dove le linee sono fitte il campo è intenso.</li>
+          <li>Il campo <i>E</i> è perpendicolare alle isoipse e punta verso potenziali decrescenti; in modulo <i>E</i> ≈ Δ<i>V</i>/Δ<i>s</i>.</li>
+          <li>Spostare una carica lungo un'isoipsa non richiede lavoro: <i>W</i> = <i>q</i>(<i>V</i><sub>A</sub> − <i>V</i><sub>B</sub>) = 0.</li>
+        </ul>
+        <p class="note">Posizioni in cm, cariche in nC, potenziale in V, campo in V/m. Le cariche sono puntiformi e V è calcolato nel piano che le contiene. Vicino a una carica V tende all'infinito: per questo colori e superficie sono troncati a ±V<sub>max</sub>.</p>
+      </section>
+    </div>
+
+    <!-- ===================== SCHEDA 2 ===================== -->
+    <div class="tabpanel" id="tab2" role="tabpanel" hidden>
+      <section class="block theory">
+        <h3>Una carica che si muove nel campo</h3>
+        <p>Una piccola sfera di carica <i>q</i>₀ e massa <i>m</i> scivola senza attrito nel piano. Su di essa agisce la forza <i>F</i> = <i>q</i>₀<i>E</i>, quindi accelera con <i>a</i> = <i>q</i>₀<i>E</i>/<i>m</i>. Il moto si calcola passo dopo passo con la seconda legge della dinamica.</p>
+      </section>
+      <section class="block">
+        <h3>Traiettorie di esempio</h3>
+        <div class="tpresets" id="tpresets2">
+          <button class="tp" data-t="circolare"><b>Orbita circolare</b><span>La forza di Coulomb fa da forza centripeta, come la gravità per un pianeta.</span></button>
+          <button class="tp" data-t="ellittiche"><b>Orbite ellittiche</b><span>Stesso punto di partenza, tre velocità diverse: ellissi come nelle leggi di Keplero.</span></button>
+          <button class="tp" data-t="rosetta"><b>Rosetta</b><span>Due cariche vicine al centro: l'orbita non si chiude più e ruota lentamente.</span></button>
+          <button class="tp" data-t="rutherford"><b>Esperimento di Rutherford</b><span>Un fascio contro una carica positiva: iperboli, e qualcuna torna indietro.</span></button>
+          <button class="tp" data-t="ferma"><b>Partenza da ferma nel dipolo</b><span>La carica non segue la linea di campo tratteggiata: conta l'inerzia.</span></button>
+          <button class="tp" data-t="condensatore"><b>Deflessione tra due file di cariche</b><span>Più la carica è veloce, meno viene deviata, come nel tubo catodico.</span></button>
+        </div>
+        <p class="note">Il moto caotico è nella scheda 3.</p>
+      </section>
+      <section class="block">
+        <h3>Carica di prova</h3>
+        <button class="btn" id="toolTest">Posiziona una carica di prova</button>
+        <p class="muted" style="margin:6px 0 0">Poi clicca sulla mappa. Se trascini prima di rilasciare le dai una velocità iniziale, altrimenti parte da ferma. Avvio, pausa e velocità di riproduzione sono nella barra sotto i grafici (oppure barra spaziatrice).</p>
+        <div class="grid2">
+          <label>Carica q₀ (nC)<input type="number" id="q0" min="-5" max="5" step="0.5" value="1"></label>
+          <label>Massa m (g)<input type="number" id="mass" min="0.1" max="20" step="0.1" value="1"></label>
+        </div>
+        <label class="check" style="margin-top:10px"><input type="checkbox" id="optVF" checked> Mostra velocità e forza durante il moto</label>
+        <label class="check"><input type="checkbox" id="optFL"> Mostra la linea di campo dal punto di partenza</label>
+        <div class="row" style="margin-top:8px"><button class="btn danger" id="simClear">Rimuovi le cariche di prova</button></div>
+      </section>
+      <section class="block">
+        <h3>Condizioni iniziali ed energia</h3>
+        <p class="muted" id="noTest">Seleziona una carica di prova sulla mappa per vederne i dati.</p>
+        <div id="testBox" hidden>
+          <div class="row between">
+            <span class="row" style="gap:10px"><span class="badge" id="testName">P1</span><span class="muted" id="testStatus"></span></span>
+            <button class="btn danger" id="testDel">Elimina</button>
+          </div>
+          <div class="grid2">
+            <label>x₀ (cm)<input type="number" id="tx" min="-10" max="10" step="0.1"></label>
+            <label>y₀ (cm)<input type="number" id="ty" min="-10" max="10" step="0.1"></label>
+            <label>Velocità iniziale v₀ (cm/s)<input type="number" id="tv" min="0" max="60" step="0.1"></label>
+            <label>Direzione (gradi dall'asse x)<input type="number" id="ta" min="-360" max="360" step="5"></label>
+          </div>
+          <p class="muted" style="margin:8px 0 0">Quantità di moto iniziale <i>p</i>₀ = <i>m</i><i>v</i>₀ = <b id="p0Out"></b></p>
+          <table class="energy">
+            <tr><td>Velocità <i>v</i></td><td id="eV"></td></tr>
+            <tr><td>Energia cinetica <i>K</i> = ½<i>mv</i>²</td><td id="eK"></td></tr>
+            <tr><td>Energia potenziale <i>U</i> = <i>q</i>₀<i>V</i></td><td id="eU"></td></tr>
+            <tr class="tot"><td>Energia totale <i>K</i> + <i>U</i></td><td id="eE"></td></tr>
+          </table>
+          <p class="note" id="energyNote" hidden>Con l'attrito attivo l'energia totale non si conserva.</p>
+        </div>
+      </section>
+      <section class="block theory">
+        <h3>Cosa osservare</h3>
+        <ul>
+          <li>La traiettoria non coincide con la linea di campo: la forza dice come cambia la velocità, non dove va la carica.</li>
+          <li>Senza attrito l'energia totale <i>K</i> + <i>U</i> resta costante: quando la carica va verso energie potenziali più basse guadagna energia cinetica.</li>
+          <li>Per <i>q</i>₀ &gt; 0 il moto somiglia a quello di una pallina che rotola sulla superficie 3D; per <i>q</i>₀ &lt; 0 la superficie andrebbe capovolta.</li>
+        </ul>
+      </section>
+    </div>
+
+    <!-- ===================== SCHEDA 3 ===================== -->
+    <div class="tabpanel" id="tab3" role="tabpanel" hidden>
+      <section class="block theory">
+        <h3>Che cos'è un sistema dinamico</h3>
+        <p>In ogni istante lo <b>stato</b> della carica di prova è dato da quattro numeri: la posizione (<i>x</i>, <i>y</i>) e la velocità (<i>v<sub>x</sub></i>, <i>v<sub>y</sub></i>). Le leggi del moto stabiliscono come lo stato cambia nel tempo: questo è un <b>sistema dinamico</b>, e lo stesso stato iniziale porta sempre allo stesso futuro.</p>
+        <p>L'insieme di tutti gli stati possibili è lo <b>spazio delle fasi</b>, qui a quattro dimensioni. Il grafico di destra può mostrarne una proiezione: la posizione <i>x</i> in orizzontale e la velocità <i>v<sub>x</sub></i> in verticale.</p>
+        <button class="btn" id="showPhase">Mostra lo spazio delle fasi</button>
+      </section>
+
+      <section class="block">
+        <h3>Attrito e motore</h3>
+        <div class="seg" id="dampSeg">
+          <button data-v="none" class="on">Nessuno</button>
+          <button data-v="visc">Viscoso</button>
+          <button data-v="active">Attivo</button>
+        </div>
+        <p class="muted" id="dampHelp" style="margin:8px 0 0"></p>
+        <div id="gammaBox">
+          <div class="field"><span>Coefficiente γ</span><output id="gOut"></output></div>
+          <input type="range" id="gamma" min="0.05" max="1.5" step="0.05">
+        </div>
+        <div id="vstarBox">
+          <div class="field"><span>Velocità di regime v*</span><output id="vsOut"></output></div>
+          <input type="range" id="vstar" min="0.5" max="5" step="0.1">
+        </div>
+      </section>
+
+      <section class="block concept theory">
+        <h3><span class="num">1</span>Punto fisso</h3>
+        <p>È uno stato in cui il sistema resta fermo per sempre: forza totale nulla e velocità zero. Se le traiettorie vicine vi ritornano è <b>stabile</b>, ed è il più semplice degli <b>attrattori</b>.</p>
+        <p>Qui la carica di prova positiva sta dentro un anello di cariche positive: al centro la forza si annulla. Con l'attrito viscoso ci arriva da qualunque punto; nello spazio delle fasi la traiettoria è una spirale verso un punto.</p>
+        <button class="btn try" data-s="puntofisso">Prova: il punto fisso</button>
+        <p class="note">Curiosità: nello spazio a tre dimensioni nessuna disposizione di cariche ha un equilibrio stabile (teorema di Earnshaw). Qui funziona perché la carica è costretta a restare nel piano.</p>
+      </section>
+
+      <section class="block concept theory">
+        <h3><span class="num">2</span>Bacino di attrazione</h3>
+        <p>Quando gli attrattori sono più di uno, ogni stato iniziale finisce su uno di essi. Gli stati che portano allo stesso attrattore formano il suo <b>bacino di attrazione</b>.</p>
+        <p>Qui tre cariche negative, A, B e C, attirano la carica di prova e l'attrito la fa cadere su una delle tre. Su quale? Prima di calcolare la mappa, prova a indovinarlo.</p>
+        <button class="btn try" data-s="bacini">Prova: tre attrattori</button>
+        <p class="muted" style="margin:6px 0 0">Altre configurazioni, per le prove a mano e per la mappa con lo zoom:</p>
+        <div class="row" style="margin-top:4px">
+          <button class="btn try" data-s="bacini4">Quattro attrattori</button>
+          <button class="btn try" data-s="baciniDiverse">Tre cariche diverse</button>
+        </div>
+        <p class="note">«Quattro attrattori»: quattro cariche uguali da −1 nC ai vertici di un quadrato. «Tre cariche diverse»: −2, −1 e −0,5 nC, senza simmetria. Chi ha il bacino più grande? E i confini lontani dalle cariche sono ancora strisce intrecciate?</p>
+        <h4>Prove a mano</h4>
+        <p class="muted" style="margin:0">Clicca sulla mappa: la carica parte da ferma e, quando arriva su un attrattore, il suo punto di partenza si colora come lui.</p>
+        <label class="check"><input type="checkbox" id="optLaunch"> Un clic sulla mappa = una prova da ferma</label>
+        <div class="legend" id="basinLegend"></div>
+        <p class="muted" id="trialStatus" style="margin:6px 0 0"></p>
+        <div class="row" style="margin-top:6px"><button class="btn" id="marksClear">Cancella i punti provati</button></div>
+        <div id="chalBox" hidden>
+          <h4>Scommessa</h4>
+          <p class="muted" style="margin:0">Evidenzia un punto e scommetti: su quale carica andrà a finire? Poi mettici la carica, cliccando sull'anello numerato.</p>
+          <ol class="chal" id="chalList"></ol>
+        </div>
+        <h4>Mappa dei bacini</h4>
+        <p class="muted" style="margin:0">La mappa colora ogni punto di partenza (da fermo) secondo l'attrattore su cui finisce: vicino alle cariche i bacini sono regioni semplici, lontano i confini si intrecciano in modo frattale, come nel pendolo magnetico.</p>
+        <div class="row" style="margin-top:8px">
+          <button class="btn" id="basinGo">Calcola la mappa</button>
+          <div class="seg" id="basinRes"><button data-v="60">Rapida</button><button data-v="100" class="on">Media</button><button data-v="150">Fine</button></div>
+        </div>
+        <div class="progress"><div id="basinBar"></div></div>
+        <p class="muted" id="basinStatus" style="margin:6px 0 0">Vale per le cariche e l'attrito attuali; serve l'attrito viscoso.</p>
+        <label class="check"><input type="checkbox" id="optBasin" checked> Mostra la mappa sulle isoipse</label>
+        <h4>Zoom sulla mappa</h4>
+        <div class="row">
+          <button class="btn" id="zoomTool">Ingrandisci un riquadro</button>
+          <button class="btn" id="zoomIn" title="Ingrandisci ×2 al centro">+</button>
+          <button class="btn" id="zoomOut" title="Riduci ×2">−</button>
+          <button class="btn" id="zoomBack" title="Torna allo zoom precedente (Esc)">Indietro</button>
+          <button class="btn" id="zoomAll">Tutta la mappa</button>
+          <button class="btn primary" id="zoomCalc">Calcola la mappa</button>
+        </div>
+        <label class="check"><input type="checkbox" id="optFollow" checked> Ricalcola la mappa dopo ogni zoom</label>
+        <p class="muted" id="zoomStatus" style="margin:6px 0 0"></p>
+        <p class="note">Con «Ingrandisci un riquadro» trascina un quadrato sulla mappa; un clic semplice ingrandisce ×2 attorno al punto. Funziona anche la rotella con Ctrl, ⌘ o Maiusc. Se la mappa è visibile, dopo lo zoom si ricalcola da sola nella nuova finestra, con lo stesso numero di partenze per lato e quindi con più dettaglio; altrimenti premi «Calcola la mappa qui». I confini tra i bacini si intrecciano anche alle scale più piccole. Sotto qualche centesimo di millimetro la struttura continua, ma il calcolo numerico non è più affidabile e l'ingrandimento si ferma.</p>
+      </section>
+
+      <section class="block concept theory">
+        <h3><span class="num">3</span>Ciclo limite</h3>
+        <p>È un'orbita chiusa che attira le traiettorie vicine: partendo da dentro o da fuori, la carica finisce sempre sullo stesso giro. Nello spazio delle fasi è una <b>curva chiusa</b> isolata.</p>
+        <p>Serve un sistema che riceva e ceda energia. Con l'attrito «attivo» la carica viene spinta quando è più lenta di <i>v</i>* e frenata quando è più veloce, finché trova l'orbita circolare percorsa esattamente a velocità <i>v</i>*.</p>
+        <button class="btn try" data-s="ciclo">Prova: il ciclo limite</button>
+      </section>
+
+      <section class="block concept theory">
+        <h3><span class="num">4</span>Caos senza attrito</h3>
+        <p>Senza attrito l'energia si conserva e <b>non esistono attrattori</b>: un gruppo di stati occupa nello spazio delle fasi un volume che resta costante (teorema di Liouville). Il moto però può essere <b>caotico</b>.</p>
+        <p>Nel «biliardo elettrico» due cariche che partono a 0,2 mm di distanza dopo qualche decina di secondi seguono traiettorie del tutto diverse: è la <b>sensibilità alle condizioni iniziali</b>. La terza carica, un po' più lenta, resta invece su un moto regolare: nello stesso sistema convivono ordine e caos.</p>
+        <button class="btn try" data-s="caos">Prova: il biliardo elettrico</button>
+        <p class="note">Perché servono almeno tre cariche al centro? Il moto attorno a due cariche fisse è il «problema dei due centri» di Eulero: si risolve esattamente e non è mai caotico. Due partenze vicine si allontanano solo lentamente, in proporzione al tempo e non in modo esponenziale.</p>
+      </section>
+
+      <section class="block concept theory">
+        <h3><span class="num">5</span>Attrattore strano</h3>
+        <p>Con attrito e motore insieme il moto può essere caotico e allo stesso tempo attratto da un insieme limitato: un <b>attrattore strano</b>, come quello «a farfalla» di Lorenz.</p>
+        <p>Da partenze molto diverse la carica finisce sempre nella stessa regione intricata dello spazio delle fasi, ma due partenze vicine si separano in fretta e il moto non si ripete mai. La forma dell'attrattore emerge dalla traccia.</p>
+        <p><b>Serve pazienza.</b> All'inizio la traccia sembra quella del biliardo: la figura si riconosce solo dopo alcuni minuti di moto simulato. Tieni d'occhio il tempo t accanto ai pulsanti della velocità: nel primo esempio la forma a trifoglio compare dopo circa 200 s (25 s di attesa a 8×, 12 s a 16×) e si completa verso 500 s. Qualche partenza indugia a lungo su un giro quasi regolare prima di entrare nella figura.</p>
+        <button class="btn try" data-s="attrattore">Prova: l'attrattore strano</button>
+        <p>Nel secondo esempio i tre ostacoli sono più lontani dal centro (4 cm) e il motore è più lento (<i>v</i>* = 1,5 cm/s). Quattro cariche partono da lati opposti dell'anello: entrano quasi subito tutte nella stessa regione e in circa 100 s di moto (una dozzina di secondi a 8×) disegnano insieme una figura compatta a tre lobi.</p>
+        <button class="btn try" data-s="attrattore2">Prova: un attrattore compatto</button>
+        <p class="muted" style="margin:6px 0 0">Il confronto con il biliardo: con le stesse cariche e le stesse partenze scegli l'attrito «Nessuno». Senza motore niente le raccoglie: ogni carica conserva la propria energia e vaga per gran parte dell'anello.</p>
+        <p class="note" style="margin-top:8px">La forma non è una farfalla: quella di Lorenz nasce da un modello di convezione nell'atmosfera, mentre qui l'attrattore riflette la simmetria delle tre cariche. Le proprietà, però, sono le stesse.</p>
+      </section>
+    </div>
+  </aside>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(() => {
+'use strict';
+/* ================= costanti ================= */
+const L = 10;                         // semilato del dominio (cm)
+const K = 8.9875517923e9;
+const KV = K * 1e-9 / 1e-2;           // V   per (nC / cm)
+const KE = K * 1e-9 / 1e-4;           // V/m per (nC / cm²)
+const RMIN = 0.15;
+const MAX_CHARGES = 20;
+const NT = 161, NS = 81;
+const ZH = 0.6, ZF = -1.0, ZTOP = 0.72, ZC = (ZF + ZTOP) / 2;
+const POS = '#d7301f', NEG = '#2052c9', INK = '#142a4c', MUTED = '#5d6b82';
+const $ = id => document.getElementById(id);
+const FONT = () => getComputedStyle(document.body).fontFamily;
+
+/* ================= stato ================= */
+const state = {
+  vmax: 1000, nlev: 10, field: 'none',
+  fill: true, hlZero: true, hlProbe: true, labels: true, snap: true, floor: true,
+  autoRot: false, clickLaunch: false, basinFollow: true, tool: 'add', newSign: 1, newMag: 2, probe: null, right: '3d',
+  cam: { az: -0.62, el: 0.52, zoom: 1 }
+};
+const CAM0 = { az: -0.62, el: 0.52, zoom: 1 };
+// finestra della mappa 2D: centro (cx, cy) e semilato h, in cm (zoom)
+const VIEW0 = { cx: 0, cy: 0, h: L }, HMIN = 0.05;
+let view = { ...VIEW0 };
+let charges = [], selected = null, nextId = 1;
+function addCharge(x, y, q){
+  if (charges.length >= MAX_CHARGES){ toast(`Puoi inserire al massimo ${MAX_CHARGES} cariche`); return null; }
+  const c = { id: nextId++, x, y, q }; charges.push(c); return c;
+}
+
+/* ================= colori ================= */
+const STOPS = [
+  [0.00, 12, 16, 168], [0.16, 30, 80, 236], [0.33, 36, 186, 236], [0.50, 84, 194, 104],
+  [0.67, 238, 220, 52], [0.83, 248, 136, 32], [1.00, 184, 22, 22]
+];
+function cmapRaw(t){
+  for (let i = 1; i < STOPS.length; i++){
+    if (t <= STOPS[i][0]){
+      const a = STOPS[i-1], b = STOPS[i], u = (t - a[0]) / (b[0] - a[0]);
+      return [a[1] + (b[1]-a[1])*u, a[2] + (b[2]-a[2])*u, a[3] + (b[3]-a[3])*u];
+    }
+  }
+  return [184, 22, 22];
+}
+const LUTN = 256, LUT = [], LUTS = [];
+for (let n = 0; n < LUTN; n++){ const c = cmapRaw(n/(LUTN-1)); LUT.push(c); LUTS.push(`rgb(${c[0]|0},${c[1]|0},${c[2]|0})`); }
+function lutIndex(v){
+  let t = 0.5 + 0.5*v/state.vmax;
+  if (!(t > 0)) t = 0; if (t > 1) t = 1;
+  return Math.round(t*(LUTN-1));
+}
+
+/* ================= formattazione ================= */
+const NF = [0,1,2].map(d => new Intl.NumberFormat('it-IT', { minimumFractionDigits: d, maximumFractionDigits: d }));
+const SIG3 = new Intl.NumberFormat('it-IT', { maximumSignificantDigits: 3 });
+const minus = s => s.replace('-', '−');
+function fmtV(v, signed){
+  const a = Math.abs(v), d = a >= 100 ? 0 : a >= 10 ? 1 : 2;
+  let s = minus(NF[d].format(v));
+  if (signed && v > 0) s = '+' + s;
+  return s;
+}
+function fmtE(e){
+  if (e >= 1e6) return NF[2].format(e/1e6) + ' MV/m';
+  if (e >= 1e3) return NF[1].format(e/1e3) + ' kV/m';
+  return NF[0].format(e) + ' V/m';
+}
+function fmtQ(q){ return (q > 0 ? '+' : q < 0 ? '−' : '') + NF[Number.isInteger(q) ? 0 : 1].format(Math.abs(q)) + ' nC'; }
+const fmtCm = x => Math.abs(x) < 0.05 ? '0,0' : minus(NF[1].format(x));
+const fmtSig = x => Math.abs(x) < 1e-9 ? '0' : minus(SIG3.format(x));
+const SUP = { '-': '⁻', '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴', '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹' };
+function fmtSci(x){
+  if (Math.abs(x) < 1e-15) return '0';
+  const e = Math.floor(Math.log10(Math.abs(x))), m = x/Math.pow(10, e);
+  return minus(NF[2].format(m)) + '·10' + String(e).split('').map(ch => SUP[ch]).join('');
+}
+
+
+/* ================= fisica del potenziale ================= */
+function potential(x, y){
+  let v = 0;
+  for (let n = 0; n < charges.length; n++){
+    const c = charges[n], dx = x - c.x, dy = y - c.y;
+    let r = Math.sqrt(dx*dx + dy*dy); if (r < RMIN) r = RMIN;
+    v += c.q/r;
+  }
+  return v*KV;
+}
+let _ex = 0, _ey = 0;
+function efieldRaw(x, y){
+  let ex = 0, ey = 0;
+  for (let n = 0; n < charges.length; n++){
+    const c = charges[n], dx = x - c.x, dy = y - c.y;
+    let r2 = dx*dx + dy*dy; if (r2 < RMIN*RMIN) r2 = RMIN*RMIN;
+    const f = c.q/(r2*Math.sqrt(r2));
+    ex += f*dx; ey += f*dy;
+  }
+  _ex = ex; _ey = ey;
+}
+function nearestSource(x, y){
+  let d = Infinity, idx = -1;
+  for (let n = 0; n < charges.length; n++){ const r = Math.hypot(x - charges[n].x, y - charges[n].y); if (r < d){ d = r; idx = n; } }
+  return [d, idx];
+}
+const nearestDist = (x, y) => nearestSource(x, y)[0];
+
+const gridT = new Float64Array(NT*NT), gridS = new Float64Array(NS*NS);
+function fillGrid(g, N, w = VIEW0){
+  const h = 2*w.h/(N-1), x0 = w.cx - w.h, y0 = w.cy - w.h;
+  for (let j = 0; j < N; j++){ const y = y0 + j*h; for (let i = 0; i < N; i++) g[j*N + i] = potential(x0 + i*h, y); }
+}
+
+/* ================= marching squares ================= */
+const SEGT = [null,[3,0],[0,1],[3,1],[1,2],null,[0,2],[3,2],[2,3],[0,2],null,[1,2],[1,3],[0,1],[3,0],null];
+function edgePt(e, a, b, c, d, i, j, lv, out){
+  let t;
+  switch (e){
+    case 0: t = (lv-a)/(b-a); out.push(i+t, j); break;
+    case 1: t = (lv-b)/(c-b); out.push(i+1, j+t); break;
+    case 2: t = (lv-d)/(c-d); out.push(i+t, j+1); break;
+    default: t = (lv-a)/(d-a); out.push(i, j+t);
+  }
+}
+function cellSeg(a, b, c, d, i, j, lv, out){
+  const cs = (a>=lv?1:0) | (b>=lv?2:0) | (c>=lv?4:0) | (d>=lv?8:0);
+  if (cs === 0 || cs === 15) return;
+  if (cs === 5 || cs === 10){
+    const up = (a+b+c+d)/4 >= lv, p = (cs === 5) === up ? [0,1,2,3] : [3,0,1,2];
+    for (const e of p) edgePt(e, a, b, c, d, i, j, lv, out);
+    return;
+  }
+  const s = SEGT[cs];
+  edgePt(s[0], a, b, c, d, i, j, lv, out); edgePt(s[1], a, b, c, d, i, j, lv, out);
+}
+let contours = new Map();
+function buildContours(){
+  const step = state.vmax/state.nlev, n = state.nlev, N = NT, g = gridT, map = new Map();
+  for (let j = 0; j < N-1; j++) for (let i = 0; i < N-1; i++){
+    const a = g[j*N+i], b = g[j*N+i+1], c = g[(j+1)*N+i+1], d = g[(j+1)*N+i];
+    let k0 = Math.ceil(Math.min(a,b,c,d)/step), k1 = Math.floor(Math.max(a,b,c,d)/step);
+    if (k0 < -n) k0 = -n; if (k1 > n) k1 = n;
+    for (let k = k0; k <= k1; k++){ let arr = map.get(k); if (!arr){ arr = []; map.set(k, arr); } cellSeg(a, b, c, d, i, j, k*step, arr); }
+  }
+  contours = map;
+}
+function singleContour(lv){
+  const out = [], N = NT, g = gridT;
+  for (let j = 0; j < N-1; j++) for (let i = 0; i < N-1; i++){
+    const a = g[j*N+i], b = g[j*N+i+1], c = g[(j+1)*N+i+1], d = g[(j+1)*N+i];
+    if (Math.min(a,b,c,d) <= lv && Math.max(a,b,c,d) >= lv) cellSeg(a, b, c, d, i, j, lv, out);
+  }
+  return out;
+}
+
+/* ================= linee di campo ================= */
+let fieldLines = [], _ux = 0, _uy = 0;
+function fdir(x, y, sgn){
+  efieldRaw(x, y); const m = Math.hypot(_ex, _ey);
+  if (m < 1e-9) return false;
+  _ux = sgn*_ex/m; _uy = sgn*_ey/m; return true;
+}
+function computeFieldLines(){
+  fieldLines = [];
+  const cs = charges.filter(c => c.q !== 0), step = 0.07, B = L*1.03, hitR = 0.22;
+  for (const c of cs){
+    const sgn = Math.sign(c.q), n = Math.max(4, Math.min(40, Math.round(Math.abs(c.q)*4)));
+    for (let m = 0; m < n; m++){
+      const ang = 2*Math.PI*(m + 0.5)/n;
+      let x = c.x + 0.25*Math.cos(ang), y = c.y + 0.25*Math.sin(ang);
+      const pts = [c.x, c.y, x, y]; let end = null;
+      for (let s = 0; s < 1600; s++){
+        if (!fdir(x, y, sgn)) break;
+        const mx = x + 0.5*step*_ux, my = y + 0.5*step*_uy;
+        if (!fdir(mx, my, sgn)) break;
+        x += step*_ux; y += step*_uy; pts.push(x, y);
+        if (x < -B || x > B || y < -B || y > B) break;
+        for (const o of cs){ if (o === c) continue; const dx = x - o.x, dy = y - o.y; if (dx*dx + dy*dy < hitR*hitR){ end = o; break; } }
+        if (end){ pts.push(end.x, end.y); break; }
+      }
+      if (sgn < 0 && end && end.q > 0) continue;
+      fieldLines.push({ pts, sgn });
+    }
+  }
+}
+
+
+/* ================= carica di prova e dinamica ================= */
+const ACC = K*1e-9;           // a (cm/s²) = ACC · q0(nC) · Σ q/r² (nC/cm²) / m(g)
+const HIT_R = 0.3, MAX_TESTS = 12, MAX_TRAIL = 40000, VS = 0.5;
+const TCOL = ['#142a4c','#8a4b00','#00695c','#5e2b97','#9c1c1c','#37474f','#1b5e20','#6d4c41','#283593','#7b1fa2','#004d40','#bf360c'];
+const FCOL = '#d81b60';
+const sim = { q0: 1, m: 1, speed: 1, running: false, t: 0, lastTs: 0, showVF: true, showFL: false, damp: 'none', gamma: 0.3, vstar: 2.5 };
+let tests = [], selTest = null, lastSel = 'charge', phaseV = 1;
+const tcol = p => TCOL[Math.max(0, tests.indexOf(p)) % TCOL.length];
+
+let _ax = 0, _ay = 0;
+function elecAccel(x, y){ efieldRaw(x, y); const f = ACC*sim.q0/sim.m; _ax = f*_ex; _ay = f*_ey; }
+function accel(x, y, vx, vy){
+  elecAccel(x, y);
+  if (sim.damp === 'visc'){ _ax -= sim.gamma*vx; _ay -= sim.gamma*vy; }
+  else if (sim.damp === 'active'){ const k = sim.gamma*(1 - (vx*vx + vy*vy)/(sim.vstar*sim.vstar)); _ax += k*vx; _ay += k*vy; }
+}
+function rk4(p, h){
+  const x = p.x, y = p.y, vx = p.vx, vy = p.vy;
+  accel(x, y, vx, vy); const a1x = _ax, a1y = _ay;
+  const x2 = x + 0.5*h*vx, y2 = y + 0.5*h*vy, vx2 = vx + 0.5*h*a1x, vy2 = vy + 0.5*h*a1y;
+  accel(x2, y2, vx2, vy2); const a2x = _ax, a2y = _ay;
+  const x3 = x + 0.5*h*vx2, y3 = y + 0.5*h*vy2, vx3 = vx + 0.5*h*a2x, vy3 = vy + 0.5*h*a2y;
+  accel(x3, y3, vx3, vy3); const a3x = _ax, a3y = _ay;
+  const x4 = x + h*vx3, y4 = y + h*vy3, vx4 = vx + h*a3x, vy4 = vy + h*a3y;
+  accel(x4, y4, vx4, vy4); const a4x = _ax, a4y = _ay;
+  p.x = x + h/6*(vx + 2*vx2 + 2*vx3 + vx4);
+  p.y = y + h/6*(vy + 2*vy2 + 2*vy3 + vy4);
+  p.vx = vx + h/6*(a1x + 2*a2x + 2*a3x + a4x);
+  p.vy = vy + h/6*(a1y + 2*a2y + 2*a3y + a4y);
+}
+function stepSize(p, d, base){
+  accel(p.x, p.y, p.vx, p.vy);
+  const v = Math.hypot(p.vx, p.vy), a = Math.hypot(_ax, _ay);
+  let h = base;
+  if (isFinite(d)) h = Math.min(h, 0.02*d/(v + 1e-9), 0.1*Math.sqrt(d/(a + 1e-12)));
+  return [Math.max(h, 1e-6), v, a];
+}
+
+function setVel(p, vx, vy){ p.vx0 = vx; p.vy0 = vy; if (vx || vy) p.ang = Math.atan2(vy, vx)*180/Math.PI; }
+function setPolar(p, mag, ang){
+  p.ang = ang; const r = ang*Math.PI/180;
+  p.vx0 = Math.abs(mag*Math.cos(r)) < 1e-9 ? 0 : mag*Math.cos(r);
+  p.vy0 = Math.abs(mag*Math.sin(r)) < 1e-9 ? 0 : mag*Math.sin(r);
+}
+function addTest(x, y, vx, vy){
+  if (tests.length >= MAX_TESTS){ toast(`Puoi inserire al massimo ${MAX_TESTS} cariche di prova`); return null; }
+  const p = { x0: x, y0: y, vx0: 0, vy0: 0, ang: 0 };
+  setVel(p, vx, vy); tests.push(p); resetParticle(p); return p;
+}
+function resetParticle(p){
+  p.x = p.x0; p.y = p.y0; p.vx = p.vx0; p.vy = p.vy0;
+  p.trail = [p.x0, p.y0]; p.trailV = [potential(p.x0, p.y0)]; p.trailVX = [p.vx0];
+  p.status = 'ready'; p.note = '';
+  p.fl = sim.showFL ? fieldLineFrom(p.x0, p.y0) : null;
+}
+function resetSim(){
+  sim.running = false; sim.t = 0; sim.lastTs = 0; phaseV = 1;
+  tests.forEach(resetParticle);
+  updateTestUI(); redraw();
+}
+function advance(p, T){
+  let t = 0, guard = 0;
+  while (t < T && guard++ < 50000){
+    const [d, idx] = nearestSource(p.x, p.y);
+    if (d < HIT_R){ p.status = 'hit'; p.note = 'urto con Q' + (idx + 1); trialEnd(p, 'q', idx, charges[idx].x, charges[idx].y); return; }
+    if (Math.abs(p.x) > 1.25*L || Math.abs(p.y) > 1.25*L){ p.status = 'out'; return; }
+    let [h, v, a] = stepSize(p, d, 0.01);
+    if (sim.damp === 'visc' && v < 0.003 && a < 0.003){ p.status = 'rest'; trialEnd(p, 'eq', -1, p.x, p.y); return; }
+    h = Math.min(h, T - t);
+    rk4(p, h); t += h;
+    const n = p.trail.length, dx = p.x - p.trail[n-2], dy = p.y - p.trail[n-1];
+    if (dx*dx + dy*dy > 0.0025){
+      p.trail.push(p.x, p.y); p.trailV.push(potential(p.x, p.y)); p.trailVX.push(p.vx);
+      if (p.trailV.length > MAX_TRAIL){ p.trail.splice(0, 2000); p.trailV.splice(0, 1000); p.trailVX.splice(0, 1000); }
+    }
+  }
+}
+function stepSim(T){
+  let active = 0;
+  for (const p of tests){
+    if (p.status === 'ready') p.status = 'moving';
+    if (p.status === 'moving'){ advance(p, T); if (p.status === 'moving') active++; }
+  }
+  sim.t += T;
+  if (!active) sim.running = false;
+}
+function fieldLineFrom(x, y){
+  const pts = [x, y], sgn = sim.q0 < 0 ? -1 : 1, st = 0.06;
+  for (let s = 0; s < 900; s++){
+    if (!fdir(x, y, sgn)) break;
+    const mx = x + 0.5*st*_ux, my = y + 0.5*st*_uy;
+    if (!fdir(mx, my, sgn)) break;
+    x += st*_ux; y += st*_uy; pts.push(x, y);
+    if (Math.abs(x) > 1.05*L || Math.abs(y) > 1.05*L) break;
+    if (nearestDist(x, y) < HIT_R) break;
+  }
+  return pts;
+}
+function refreshTests(){
+  for (const p of tests){
+    for (let k = 0; k < p.trailV.length; k++) p.trailV[k] = potential(p.trail[2*k], p.trail[2*k+1]);
+    if (sim.t === 0) p.fl = sim.showFL ? fieldLineFrom(p.x0, p.y0) : null;
+  }
+}
+function statusText(p){ return { ready: 'pronta', moving: 'in moto', out: 'uscita dalla mappa', rest: 'ferma in equilibrio', hit: p.note }[p.status]; }
+
+
+/* ================= bacini di attrazione ================= */
+const BCOL = ['#e8a33d','#3fa7a0','#8e6cc9','#d9617a','#6aa84f','#4f86c6','#c7a02a','#a0522d'];
+const EQCOL = ['#9aa0ac','#c9b18a','#7f8fa6'];
+const LETTERS = 'ABCDEFGH', MAX_MARKS = 400;
+// win: finestra (centro e semilato in cm) su cui è stata calcolata la mappa; n[k]: celle che finiscono sull'attrattore k
+const basin = { N: 100, data: null, row: 0, active: false, show: true, n: [], undecided: 0, win: { ...VIEW0 }, cv: document.createElement('canvas'), img: null };
+// Registro degli attrattori, comune a mappa e prove a mano: stesso attrattore, stesso colore e stessa lettera.
+// marks: punti di partenza delle prove a mano (da ferma, con attrito viscoso) con l'attrattore su cui sono finite.
+let attractors = [], marks = [];
+
+// Cariche che possono attirare la carica di prova (segno opposto a q0), nell'ordine dell'elenco: A, B, C…
+function attractorCands(){ const out = []; charges.forEach((c, i) => { if (c.q*sim.q0 < 0) out.push(i); }); return out; }
+const candColor = r => BCOL[r % BCOL.length];
+function placeName(x, y){
+  if (Math.hypot(x, y) < 0.5) return 'al centro';
+  const names = ['a destra','in alto a destra','in alto','in alto a sinistra','a sinistra','in basso a sinistra','in basso','in basso a destra'];
+  return names[((Math.round(Math.atan2(y, x)*4/Math.PI) % 8) + 8) % 8];
+}
+
+// Mappe già calcolate, per finestra e risoluzione: tornando indietro con lo zoom non si ricalcola.
+const basinCache = new Map(), MAX_CACHE = 12;
+const winKey = (w, N) => `${w.cx},${w.cy},${w.h},${N}`;
+function basinSave(){
+  basinCache.delete(winKey(basin.win, basin.N));
+  basinCache.set(winKey(basin.win, basin.N), { data: basin.data, n: basin.n.slice(), undecided: basin.undecided, img: basin.img, win: { ...basin.win }, N: basin.N });
+  if (basinCache.size > MAX_CACHE) basinCache.delete(basinCache.keys().next().value);
+}
+function basinRestore(w){
+  const c = basinCache.get(winKey(w, basin.N));
+  if (!c) return false;
+  Object.assign(basin, { data: c.data, n: c.n.slice(), undecided: c.undecided, img: c.img, win: { ...c.win }, row: c.N, active: false, show: true });
+  basin.cv.width = basin.cv.height = c.N; basin.cv.getContext('2d').putImageData(c.img, 0, 0);
+  updateBasinUI(); needTop = true; schedule();
+  return true;
+}
+
+// Cambiano cariche, q0, massa o attrito: mappa, prove e attrattori non valgono più.
+function basinClear(){
+  const had = basin.data || basin.active || marks.length || attractors.length;
+  basinCache.clear();
+  basin.data = null; basin.active = false; basin.row = 0; basin.n = []; attractors = []; marks = [];
+  if (had){ updateBasinUI(); needTop = true; schedule(); }
+}
+function basinStart(){
+  if (!charges.length){ toast('Servono delle cariche sulla mappa'); return; }
+  if (sim.damp !== 'visc'){ setDamp('visc', sim.gamma > 0.6 ? 0.2 : sim.gamma); toast('Per i bacini serve l\'attrito viscoso: l\'ho attivato'); }
+  const N = basin.N;
+  basin.win = { ...view };
+  basin.data = new Int16Array(N*N).fill(-3); basin.row = 0; basin.n = []; basin.undecided = 0;
+  basin.active = true; basin.show = true; $('optBasin').checked = true;
+  basin.cv.width = N; basin.cv.height = N; basin.img = basin.cv.getContext('2d').createImageData(N, N);
+  updateBasinUI(); schedule();
+}
+function attractorKey(kind, idx, x, y){
+  for (let k = 0; k < attractors.length; k++){
+    const a = attractors[k];
+    if (a.kind === kind && (kind === 'q' ? a.idx === idx : Math.hypot(a.x - x, a.y - y) < 0.5)) return k;
+  }
+  let col, letter;
+  if (kind === 'q'){
+    const r = attractorCands().indexOf(idx);
+    col = candColor(r >= 0 ? r : attractors.length);
+    letter = r >= 0 && r < LETTERS.length ? LETTERS[r] : 'Q' + (idx + 1);
+  } else {
+    const n = attractors.filter(a => a.kind === 'eq').length;
+    col = EQCOL[n % EQCOL.length]; letter = 'E' + (n + 1);
+  }
+  attractors.push({ kind, idx, x, y, col, letter, rgb: [1,3,5].map(o => parseInt(col.slice(o, o+2), 16)) });
+  return attractors.length - 1;
+}
+// Fine di una prova a mano (da advance): il punto di partenza prende il colore dell'attrattore.
+function trialEnd(p, kind, idx, x, y){
+  if (sim.damp !== 'visc' || p.vx0 || p.vy0) return;     // i bacini valgono per partenze da ferma con attrito viscoso
+  const k = attractorKey(kind, idx, x, y);
+  p.end = k;
+  marks = marks.filter(m => m.x !== p.x0 || m.y !== p.y0);
+  marks.push({ x: p.x0, y: p.y0, k });
+  if (marks.length > MAX_MARKS) marks.shift();
+  trialDone(p, k);
+}
+const markAt = (x, y) => marks.find(m => Math.abs(m.x - x) < 1e-9 && Math.abs(m.y - y) < 1e-9);
+
+const _bp = { x: 0, y: 0, vx: 0, vy: 0 };
+function basinClassify(x0, y0){
+  const p = _bp; p.x = x0; p.y = y0; p.vx = 0; p.vy = 0;
+  let t = 0, still = 0;
+  if (nearestDist(x0, y0) < HIT_R) return -1;          // partenza dentro una carica: esclusa
+  for (let g = 0; g < 40000; g++){
+    const [d, idx] = nearestSource(p.x, p.y);
+    if (d < HIT_R) return attractorKey('q', idx, charges[idx].x, charges[idx].y);
+    if (Math.abs(p.x) > 2.5*L || Math.abs(p.y) > 2.5*L) return -1;
+    const [h, v, a] = stepSize(p, d, 0.02);
+    if (v < 0.005 && a < 0.005){ if (++still > 30) return attractorKey('eq', -1, p.x, p.y); } else still = 0;
+    rk4(p, h); t += h;
+    if (t > 200) break;
+  }
+  return -2;
+}
+function basinWork(budget){
+  const N = basin.N, t0 = performance.now(), d = basin.img.data, w = basin.win, cell = 2*w.h/N;
+  while (basin.row < N && performance.now() - t0 < budget){
+    const j = basin.row, y = w.cy + w.h - (j + 0.5)*cell;
+    for (let i = 0; i < N; i++){
+      const k = basinClassify(w.cx - w.h + (i + 0.5)*cell, y), o = (j*N + i)*4;
+      basin.data[j*N + i] = k;
+      if (k >= 0){ const c = attractors[k]; basin.n[k] = (basin.n[k] || 0) + 1; d[o] = c.rgb[0]; d[o+1] = c.rgb[1]; d[o+2] = c.rgb[2]; d[o+3] = 235; }
+      else if (k === -2){ basin.undecided++; d[o] = 70; d[o+1] = 74; d[o+2] = 84; d[o+3] = 220; }
+      else d[o+3] = 0;
+    }
+    basin.row++;
+  }
+  basin.cv.getContext('2d').putImageData(basin.img, 0, 0);
+  if (basin.row >= N){ basin.active = false; basinSave(); }
+  updateBasinUI();
+}
+
+/* ================= vista dall'alto ================= */
+const topCv = $('top'), tctx = topCv.getContext('2d');
+let dpr = 1, topW = 0, topH = 0, FS = 1;
+const TL = { x0: 0, y0: 0, P: 100 };
+function layoutTop(){
+  const r = topCv.getBoundingClientRect();
+  dpr = window.devicePixelRatio || 1;
+  topW = r.width; topH = r.height;
+  topCv.width = Math.max(1, Math.round(topW*dpr)); topCv.height = Math.max(1, Math.round(topH*dpr));
+  const ml = 44, mr = 88, mt = 30, mb = 36;
+  const P = Math.max(60, Math.min(topW - ml - mr, topH - mt - mb));
+  TL.P = P; FS = Math.max(1, Math.min(1.5, P/640));
+  TL.x0 = ml + Math.max(0, (topW - ml - mr - P)/2);
+  TL.y0 = mt + Math.max(0, (topH - mt - mb - P)/2);
+}
+const toSX = x => TL.x0 + (x - view.cx + view.h)/(2*view.h)*TL.P;
+const toSY = y => TL.y0 + (view.cy + view.h - y)/(2*view.h)*TL.P;
+const toX = sx => view.cx - view.h + (sx - TL.x0)/TL.P*2*view.h;
+const toY = sy => view.cy + view.h - (sy - TL.y0)/TL.P*2*view.h;
+// passo «tondo» (1, 2, 5 × 10ⁿ) non minore di x, per tacche, griglia e aggancio a ogni ingrandimento
+function niceStep(x){ const e = Math.pow(10, Math.floor(Math.log10(x))), m = x/e; return (m <= 1.0001 ? 1 : m <= 2.0001 ? 2 : m <= 5.0001 ? 5 : 10)*e; }
+function fmtTick(v, s){ const d = Math.max(0, -Math.floor(Math.log10(s) + 1e-9)); return minus((Math.abs(v) < s/2 ? 0 : v).toFixed(d).replace('.', ',')); }
+function ticks(lo, hi, s){ const out = []; for (let k = Math.ceil(lo/s - 1e-9); k*s <= hi + s*1e-9; k++) out.push(k*s); return out; }
+// punti sfida dello scenario (chal.list), quello evidenziato (cur) e il più avanzato mostrato finora (reached)
+const chal = { list: null, cur: -1, reached: -1 };
+let zsel = null;   // riquadro di zoom in corso di trascinamento (coordinate di schermo)
+const chargeRadius = c => (8 + 2.2*Math.sqrt(Math.abs(c.q)))*Math.min(FS, 1.25);
+
+const heat = document.createElement('canvas'); heat.width = NT; heat.height = NT;
+const hctx = heat.getContext('2d'), himg = hctx.createImageData(NT, NT);
+function updateHeat(){
+  const d = himg.data;
+  for (let row = 0; row < NT; row++){
+    const j = NT - 1 - row;
+    for (let i = 0; i < NT; i++){
+      const c = LUT[lutIndex(gridT[j*NT + i])], p = (row*NT + i)*4;
+      d[p] = 255 - (255 - c[0])*0.38; d[p+1] = 255 - (255 - c[1])*0.38; d[p+2] = 255 - (255 - c[2])*0.38; d[p+3] = 255;
+    }
+  }
+  hctx.putImageData(himg, 0, 0);
+}
+function arrowHead(ctx, x, y, ux, uy, s){
+  ctx.moveTo(x + ux*s, y + uy*s);
+  ctx.lineTo(x - ux*s*0.7 - uy*s*0.6, y - uy*s*0.7 + ux*s*0.6);
+  ctx.lineTo(x - ux*s*0.7 + uy*s*0.6, y - uy*s*0.7 - ux*s*0.6);
+  ctx.closePath();
+}
+function haloText(ctx, text, x, y){
+  ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(255,255,255,.92)'; ctx.lineJoin = 'round';
+  ctx.strokeText(text, x, y); ctx.fillText(text, x, y);
+}
+function roundBox(ctx, x, y, w, h, r){ ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x, y, w, h, r) : ctx.rect(x, y, w, h); }
+function drawArrow(ctx, x1, y1, x2, y2, col, w){
+  const dx = x2 - x1, dy = y2 - y1, m = Math.hypot(dx, dy);
+  if (m < 3) return;
+  const ux = dx/m, uy = dy/m, s = Math.min(8, 3 + m*0.2), ex = x2 - ux*s*1.2, ey = y2 - uy*s*1.2;
+  ctx.lineCap = 'round';
+  ctx.strokeStyle = 'rgba(255,255,255,.9)'; ctx.lineWidth = w + 3;
+  ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(ex, ey); ctx.stroke();
+  ctx.strokeStyle = col; ctx.lineWidth = w;
+  ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(ex, ey); ctx.stroke();
+  ctx.fillStyle = col; ctx.beginPath(); arrowHead(ctx, x2 - ux*s, y2 - uy*s, ux, uy, s); ctx.fill();
+}
+function drawBall(ctx, sx, sy, col, sel){
+  ctx.beginPath(); ctx.arc(sx, sy, 7.5, 0, 2*Math.PI); ctx.fillStyle = '#fff'; ctx.fill();
+  ctx.lineWidth = 2.6; ctx.strokeStyle = col; ctx.stroke();
+  if (sim.q0 !== 0){
+    ctx.lineWidth = 1.8; ctx.beginPath(); ctx.moveTo(sx - 3.5, sy); ctx.lineTo(sx + 3.5, sy);
+    if (sim.q0 > 0){ ctx.moveTo(sx, sy - 3.5); ctx.lineTo(sx, sy + 3.5); }
+    ctx.stroke();
+  }
+  if (sel){ ctx.beginPath(); ctx.arc(sx, sy, 12.5, 0, 2*Math.PI); ctx.lineWidth = 1.6; ctx.setLineDash([3,3]); ctx.stroke(); ctx.setLineDash([]); }
+}
+function handlePos(p){
+  const v = Math.hypot(p.vx0, p.vy0);
+  return v < 1e-9 ? [p.x0 + 1.4, p.y0] : [p.x0 + p.vx0*VS, p.y0 + p.vy0*VS];
+}
+function drawTestsBelow(ctx){
+  ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+  for (const p of tests){
+    if (p.fl && p.fl.length > 2){
+      ctx.beginPath(); ctx.moveTo(toSX(p.fl[0]), toSY(p.fl[1]));
+      for (let k = 2; k < p.fl.length; k += 2) ctx.lineTo(toSX(p.fl[k]), toSY(p.fl[k+1]));
+      ctx.strokeStyle = 'rgba(20,42,76,.8)'; ctx.lineWidth = 1.8; ctx.setLineDash([2,5]); ctx.stroke(); ctx.setLineDash([]);
+    }
+    if (p.trail.length > 2){
+      ctx.beginPath(); ctx.moveTo(toSX(p.trail[0]), toSY(p.trail[1]));
+      for (let k = 2; k < p.trail.length; k += 2) ctx.lineTo(toSX(p.trail[k]), toSY(p.trail[k+1]));
+      ctx.lineTo(toSX(p.x), toSY(p.y));
+      ctx.strokeStyle = 'rgba(255,255,255,.8)'; ctx.lineWidth = 4.5; ctx.stroke();
+      ctx.strokeStyle = tcol(p); ctx.lineWidth = p === selTest ? 2.2 : 1.8; ctx.stroke();
+    }
+  }
+}
+function drawTestsAbove(ctx){
+  if (!tests.length) return;
+  const font = FONT(), started = sim.t > 0, ppc = TL.P/(2*L);
+  ctx.save(); ctx.beginPath(); ctx.rect(TL.x0 - 12, TL.y0 - 12, TL.P + 24, TL.P + 24); ctx.clip();
+  for (const p of tests){
+    const col = tcol(p);
+    if (started){
+      ctx.beginPath(); ctx.arc(toSX(p.x0), toSY(p.y0), 3.5, 0, 2*Math.PI);
+      ctx.fillStyle = '#fff'; ctx.fill(); ctx.strokeStyle = col; ctx.lineWidth = 1.5; ctx.stroke();
+      if (sim.showVF && p.status === 'moving'){
+        const sx = toSX(p.x), sy = toSY(p.y), len = Math.hypot(p.vx, p.vy)*VS;
+        if (len > 0.05){ const f = Math.min(len, 7)/len; drawArrow(ctx, sx, sy, sx + p.vx*VS*f*ppc, sy - p.vy*VS*f*ppc, col, 2.2); }
+        elecAccel(p.x, p.y); const a = Math.hypot(_ax, _ay);
+        // la freccia parte dal bordo della pallina (≈ 16 px), altrimenti con forze deboli resta nascosta sotto di essa
+        if (a > 1e-6){ const fl = 16 + Math.min(5, 2.5*Math.sqrt(a))*ppc; drawArrow(ctx, sx, sy, sx + _ax/a*fl, sy - _ay/a*fl, FCOL, 2.2); }
+      }
+    } else {
+      const v = Math.hypot(p.vx0, p.vy0), sx = toSX(p.x0), sy = toSY(p.y0);
+      if (v > 0) drawArrow(ctx, sx, sy, toSX(p.x0 + p.vx0*VS), toSY(p.y0 + p.vy0*VS), col, 2.2);
+      if (p === selTest){
+        const [hx, hy] = handlePos(p), hsx = toSX(hx), hsy = toSY(hy);
+        ctx.beginPath(); ctx.arc(hsx, hsy, 9, 0, 2*Math.PI); ctx.strokeStyle = col; ctx.lineWidth = 1.6;
+        if (v === 0){
+          ctx.fillStyle = 'rgba(255,255,255,.9)'; ctx.fill(); ctx.setLineDash([3,3]); ctx.stroke(); ctx.setLineDash([]);
+          ctx.fillStyle = col; ctx.font = `italic 600 13px ${font}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('v', hsx, hsy);
+        } else ctx.stroke();
+      }
+    }
+    drawBall(ctx, toSX(p.x), toSY(p.y), col, p === selTest);
+    if (state.labels){
+      ctx.fillStyle = col; ctx.font = `600 ${Math.round(12*FS)}px ${font}`; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+      haloText(ctx, 'P' + (tests.indexOf(p) + 1), toSX(p.x) + 9, toSY(p.y) + 6);
+    }
+  }
+  ctx.restore();
+  if (started && sim.showVF){
+    const x = TL.x0 + 10, y = TL.y0 + 10, w = 158, h = 50;
+    ctx.fillStyle = 'rgba(255,255,255,.93)'; ctx.strokeStyle = 'rgba(20,42,76,.22)'; ctx.lineWidth = 1;
+    roundBox(ctx, x, y, w, h, 6); ctx.fill(); ctx.stroke();
+    drawArrow(ctx, x + 10, y + 16, x + 42, y + 16, INK, 2.2);
+    drawArrow(ctx, x + 10, y + 34, x + 42, y + 34, FCOL, 2.2);
+    ctx.fillStyle = INK; ctx.font = `13px ${font}`; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    ctx.fillText('velocità', x + 50, y + 16); ctx.fillText('forza elettrica', x + 50, y + 34);
+  }
+}
+
+function drawMarks(ctx){
+  const r = 6*Math.min(FS, 1.3);
+  for (const m of marks){
+    const a = attractors[m.k]; if (!a) continue;
+    const sx = toSX(m.x), sy = toSY(m.y);
+    ctx.beginPath(); ctx.arc(sx, sy, r, 0, 2*Math.PI); ctx.fillStyle = a.col; ctx.fill();
+    ctx.lineWidth = 2; ctx.strokeStyle = '#fff'; ctx.stroke();
+    ctx.beginPath(); ctx.arc(sx, sy, r + 1.6, 0, 2*Math.PI); ctx.lineWidth = 1; ctx.strokeStyle = 'rgba(20,42,76,.6)'; ctx.stroke();
+  }
+}
+function drawChallenges(ctx, font){
+  if (!chal.list) return;
+  chal.list.forEach(([x, y], n) => {
+    if (n > chal.reached) return;
+    const sx = toSX(x), sy = toSY(y), cur = n === chal.cur, m = markAt(x, y), r = cur ? 14 : 10;
+    ctx.beginPath(); ctx.arc(sx, sy, r, 0, 2*Math.PI);
+    ctx.lineWidth = cur ? 6 : 4; ctx.strokeStyle = 'rgba(255,255,255,.85)'; ctx.stroke();
+    ctx.lineWidth = cur ? 2.6 : 1.6; ctx.strokeStyle = m && attractors[m.k] ? attractors[m.k].col : INK;
+    ctx.setLineDash(m ? [] : [4,3]); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = INK; ctx.font = `700 ${Math.round((cur ? 15 : 12)*FS)}px ${font}`; ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
+    haloText(ctx, String(n + 1), sx + r*0.75, sy - r*0.75);
+  });
+}
+// lettere e anelli colorati sulle cariche che possono attirare la carica di prova (solo con attrito viscoso)
+function attractorRanks(){
+  if (sim.damp !== 'visc') return null;
+  const c = attractorCands();
+  return c.length >= 2 && c.length <= LETTERS.length ? c : null;
+}
+
+function drawTop(){
+  const ctx = tctx, P = TL.P, x0 = TL.x0, y0 = TL.y0, font = FONT();
+  if (topW < 10) return;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, topW, topH);
+  ctx.fillStyle = '#fff'; ctx.fillRect(x0, y0, P, P);
+  const showBasin = basin.data && basin.show, bwin = basin.win;
+  const sameWin = bwin.cx === view.cx && bwin.cy === view.cy && bwin.h === view.h;
+  const xlo = view.cx - view.h, xhi = view.cx + view.h, ylo = view.cy - view.h, yhi = view.cy + view.h;
+  if ((!showBasin || !sameWin) && state.fill){ ctx.imageSmoothingEnabled = true; ctx.drawImage(heat, x0, y0, P, P); }
+  if (showBasin){
+    // la mappa sta sulla finestra in cui è stata calcolata (dopo uno zoom può occupare solo una parte del riquadro)
+    const bx = toSX(bwin.cx - bwin.h), by = toSY(bwin.cy + bwin.h), bs = toSX(bwin.cx + bwin.h) - bx;
+    ctx.save(); ctx.beginPath(); ctx.rect(x0, y0, P, P); ctx.clip();
+    ctx.imageSmoothingEnabled = false; ctx.drawImage(basin.cv, bx, by, bs, bs); ctx.imageSmoothingEnabled = true;
+    if (!sameWin){ ctx.strokeStyle = INK; ctx.lineWidth = 1.5; ctx.setLineDash([6,4]); ctx.strokeRect(bx, by, bs, bs); ctx.setLineDash([]); }
+    ctx.restore();
+  }
+
+  const gstep = niceStep(2*view.h/20);
+  ctx.lineWidth = 1; ctx.strokeStyle = 'rgba(20,42,76,.08)'; ctx.beginPath();
+  for (const v of ticks(xlo, xhi, gstep)){ const sx = toSX(v); ctx.moveTo(sx, y0); ctx.lineTo(sx, y0+P); }
+  for (const v of ticks(ylo, yhi, gstep)){ const sy = toSY(v); ctx.moveTo(x0, sy); ctx.lineTo(x0+P, sy); }
+  ctx.stroke();
+  ctx.strokeStyle = 'rgba(20,42,76,.3)'; ctx.setLineDash([4,4]); ctx.beginPath();
+  if (xlo <= 0 && xhi >= 0){ ctx.moveTo(toSX(0), y0); ctx.lineTo(toSX(0), y0+P); }
+  if (ylo <= 0 && yhi >= 0){ ctx.moveTo(x0, toSY(0)); ctx.lineTo(x0+P, toSY(0)); }
+  ctx.stroke(); ctx.setLineDash([]);
+
+  ctx.save(); ctx.beginPath(); ctx.rect(x0, y0, P, P); ctx.clip();
+  ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+  const g2 = P/(NT-1), step = state.vmax/state.nlev;
+  if (showBasin) ctx.globalAlpha = 0.45;
+  for (const [k, arr] of contours){
+    ctx.beginPath();
+    for (let m = 0; m < arr.length; m += 4){ ctx.moveTo(x0 + arr[m]*g2, y0 + P - arr[m+1]*g2); ctx.lineTo(x0 + arr[m+2]*g2, y0 + P - arr[m+3]*g2); }
+    ctx.strokeStyle = LUTS[lutIndex(k*step)];
+    ctx.lineWidth = (k === 0 && state.hlZero) ? 3 : 1.4;
+    ctx.stroke();
+  }
+  ctx.globalAlpha = 1;
+
+  if (state.field === 'lines'){
+    ctx.strokeStyle = 'rgba(20,42,76,.62)'; ctx.lineWidth = 1.1; ctx.beginPath();
+    for (const fl of fieldLines){ const p = fl.pts; ctx.moveTo(toSX(p[0]), toSY(p[1])); for (let m = 2; m < p.length; m += 2) ctx.lineTo(toSX(p[m]), toSY(p[m+1])); }
+    ctx.stroke();
+    ctx.fillStyle = 'rgba(20,42,76,.85)'; ctx.beginPath();
+    for (const fl of fieldLines){
+      const p = fl.pts, npts = p.length/2;
+      if (npts < 8) continue;
+      let last = npts - 1;
+      for (let m = 1; m < npts; m++){ if (Math.abs(p[2*m]) > L || Math.abs(p[2*m+1]) > L){ last = m - 1; break; } }
+      const k = Math.max(2, Math.floor(last*0.5));
+      if (k + 1 >= npts) continue;
+      const ax = toSX(p[2*k]), ay = toSY(p[2*k+1]);
+      let ux = toSX(p[2*k+2]) - ax, uy = toSY(p[2*k+3]) - ay; const m = Math.hypot(ux, uy); if (m === 0) continue;
+      arrowHead(ctx, ax, ay, ux/m*fl.sgn, uy/m*fl.sgn, 6);
+    }
+    ctx.fill();
+  } else if (state.field === 'vectors' && charges.length){
+    const n = 16, cell = 2*view.h/n, vals = []; let lmin = Infinity, lmax = -Infinity;
+    for (let j = 0; j < n; j++) for (let i = 0; i < n; i++){
+      const x = xlo + (i + 0.5)*cell, y = ylo + (j + 0.5)*cell;
+      if (nearestDist(x, y) < 0.7*view.h/L) continue;
+      efieldRaw(x, y); const mag = Math.hypot(_ex, _ey); if (mag === 0) continue;
+      const lm = Math.log10(mag); lmin = Math.min(lmin, lm); lmax = Math.max(lmax, lm);
+      vals.push([x, y, _ex/mag, _ey/mag, lm]);
+    }
+    const len = P/n*0.78;
+    for (const [x, y, ux, uy, lm] of vals){
+      const t = lmax > lmin ? (lm - lmin)/(lmax - lmin) : 1, sx = toSX(x), sy = toSY(y), dx = ux*len/2, dy = -uy*len/2;
+      ctx.strokeStyle = ctx.fillStyle = `rgba(20,42,76,${0.22 + 0.73*t})`; ctx.lineWidth = 1 + 1.2*t;
+      ctx.beginPath(); ctx.moveTo(sx - dx, sy - dy); ctx.lineTo(sx + dx*0.55, sy + dy*0.55); ctx.stroke();
+      ctx.beginPath(); arrowHead(ctx, sx + dx*0.55, sy + dy*0.55, ux, -uy, 3 + 2*t); ctx.fill();
+    }
+  }
+
+  const pr = state.probe;
+  if (pr && state.hlProbe && charges.length && nearestDist(pr.x, pr.y) > RMIN){
+    const arr = singleContour(potential(pr.x, pr.y));
+    ctx.beginPath();
+    for (let m = 0; m < arr.length; m += 4){ ctx.moveTo(x0 + arr[m]*g2, y0 + P - arr[m+1]*g2); ctx.lineTo(x0 + arr[m+2]*g2, y0 + P - arr[m+3]*g2); }
+    ctx.strokeStyle = INK; ctx.lineWidth = 2.2; ctx.setLineDash([7,5]); ctx.stroke(); ctx.setLineDash([]);
+  }
+  drawTestsBelow(ctx);
+  ctx.restore();
+
+  ctx.strokeStyle = INK; ctx.lineWidth = 1.2; ctx.strokeRect(x0, y0, P, P);
+
+  // cariche sorgente (con lo zoom quelle fuori dal riquadro non si disegnano)
+  const showLab = state.labels, ranks = attractorRanks();
+  ctx.save(); ctx.beginPath(); ctx.rect(x0 - 14, y0 - 14, P + 28, P + 28); ctx.clip();
+  charges.forEach((c, ci) => {
+    const sx = toSX(c.x), sy = toSY(c.y), r = chargeRadius(c);
+    if (sx < x0 - 30 || sx > x0 + P + 30 || sy < y0 - 30 || sy > y0 + P + 30) return;
+    ctx.beginPath(); ctx.arc(sx, sy, r + 2, 0, 2*Math.PI); ctx.fillStyle = '#fff'; ctx.fill();
+    ctx.beginPath(); ctx.arc(sx, sy, r, 0, 2*Math.PI); ctx.fillStyle = c.q > 0 ? POS : c.q < 0 ? NEG : '#8a93a6'; ctx.fill();
+    const rk = ranks ? ranks.indexOf(ci) : -1;
+    if (rk >= 0){
+      ctx.lineWidth = 4; ctx.strokeStyle = candColor(rk); ctx.beginPath(); ctx.arc(sx, sy, r + 4, 0, 2*Math.PI); ctx.stroke();
+      ctx.fillStyle = INK; ctx.font = `700 ${Math.round(16*FS)}px ${font}`; ctx.textAlign = 'right'; ctx.textBaseline = 'bottom';
+      haloText(ctx, LETTERS[rk], sx - r - 4, sy - r + 2);
+    }
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 2.4; ctx.lineCap = 'round'; ctx.beginPath();
+    ctx.moveTo(sx - r*0.5, sy); ctx.lineTo(sx + r*0.5, sy);
+    if (c.q > 0){ ctx.moveTo(sx, sy - r*0.5); ctx.lineTo(sx, sy + r*0.5); }
+    ctx.stroke();
+    if (c === selected){ ctx.beginPath(); ctx.arc(sx, sy, r + 6, 0, 2*Math.PI); ctx.strokeStyle = INK; ctx.lineWidth = 2; ctx.setLineDash([3,3]); ctx.stroke(); ctx.setLineDash([]); }
+    if (showLab && (charges.length <= 8 || c === selected)){
+      ctx.fillStyle = INK; ctx.font = `600 ${Math.round(13*FS)}px ${font}`; ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
+      haloText(ctx, fmtQ(c.q), sx + r + 4, sy - r + 2);
+    }
+  });
+  ctx.restore();
+  drawTestsAbove(ctx);
+  ctx.save(); ctx.beginPath(); ctx.rect(x0, y0, P, P); ctx.clip();
+  drawMarks(ctx);
+  drawChallenges(ctx, font);
+  if (zsel){
+    const s = Math.max(Math.abs(zsel.sx1 - zsel.sx0), Math.abs(zsel.sy1 - zsel.sy0));
+    const cx = (zsel.sx0 + zsel.sx1)/2, cy = (zsel.sy0 + zsel.sy1)/2;
+    ctx.fillStyle = 'rgba(20,42,76,.08)'; ctx.fillRect(cx - s/2, cy - s/2, s, s);
+    ctx.strokeStyle = INK; ctx.lineWidth = 1.5; ctx.setLineDash([5,4]); ctx.strokeRect(cx - s/2, cy - s/2, s, s); ctx.setLineDash([]);
+  }
+  ctx.restore();
+  if (view.h < L){
+    const txt = 'Zoom ×' + SIG3.format(L/view.h);
+    ctx.font = `600 ${Math.round(13*FS)}px ${font}`;
+    const tw = ctx.measureText(txt).width + 12, th = 22*FS, tx = x0 + P - tw - 8, ty = y0 + 8;
+    ctx.fillStyle = 'rgba(255,255,255,.93)'; ctx.strokeStyle = 'rgba(20,42,76,.3)'; ctx.lineWidth = 1;
+    roundBox(ctx, tx, ty, tw, th, 5); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = INK; ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.fillText(txt, tx + 6, ty + th/2 + 0.5);
+  }
+
+  if (pr){
+    const sx = toSX(pr.x), sy = toSY(pr.y);
+    ctx.strokeStyle = INK; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(sx, sy, 5, 0, 2*Math.PI);
+    ctx.moveTo(sx - 11, sy); ctx.lineTo(sx - 6, sy); ctx.moveTo(sx + 6, sy); ctx.lineTo(sx + 11, sy);
+    ctx.moveTo(sx, sy - 11); ctx.lineTo(sx, sy - 6); ctx.moveTo(sx, sy + 6); ctx.lineTo(sx, sy + 11);
+    ctx.stroke();
+    if (charges.length){
+      const txt = 'V = ' + fmtV(potential(pr.x, pr.y), true) + ' V';
+      ctx.font = `600 ${Math.round(14*FS)}px ${font}`;
+      const tw = ctx.measureText(txt).width, th = 24*FS;
+      let tx = sx + 14, ty = sy + 14;
+      if (tx + tw + 10 > x0 + P) tx = sx - 14 - tw - 10;
+      if (ty + th > y0 + P) ty = sy - 14 - th;
+      ctx.fillStyle = 'rgba(255,255,255,.94)'; ctx.strokeStyle = 'rgba(20,42,76,.25)'; ctx.lineWidth = 1;
+      roundBox(ctx, tx, ty, tw + 10, th, 5); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = INK; ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.fillText(txt, tx + 5, ty + th/2 + 0.5);
+    }
+  }
+
+  // assi
+  ctx.font = `${Math.round(12*FS)}px ${font}`; ctx.fillStyle = MUTED;
+  const tstep = niceStep(2*view.h/(P > 420 ? 10 : 5));
+  ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  for (const v of ticks(xlo, xhi, tstep)) ctx.fillText(fmtTick(v, tstep), toSX(v), y0 + P + 6);
+  ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+  for (const v of ticks(ylo, yhi, tstep)) ctx.fillText(fmtTick(v, tstep), x0 - 6, toSY(v));
+  ctx.fillStyle = INK; ctx.font = `italic ${Math.round(14*FS)}px ${font}`;
+  ctx.textAlign = 'right'; ctx.textBaseline = 'top'; ctx.fillText('x (cm)', x0 + P, y0 + P + 20);
+  ctx.save(); ctx.translate(x0 - 30, y0); ctx.rotate(-Math.PI/2); ctx.textAlign = 'right'; ctx.textBaseline = 'middle'; ctx.fillText('y (cm)', 0, 0); ctx.restore();
+
+  // barra dei colori
+  const bx = x0 + P + 16, bw = 13, steps = 120;
+  for (let s = 0; s < steps; s++){ ctx.fillStyle = LUTS[Math.round((1 - s/steps)*(LUTN-1))]; ctx.fillRect(bx, y0 + s*P/steps, bw, P/steps + 1); }
+  ctx.strokeStyle = INK; ctx.lineWidth = 1; ctx.strokeRect(bx, y0, bw, P);
+  ctx.strokeStyle = 'rgba(20,42,76,.55)'; ctx.beginPath();
+  for (let k = -state.nlev; k <= state.nlev; k++){ const yy = y0 + P*(0.5 - 0.5*k/state.nlev); ctx.moveTo(bx + bw, yy); ctx.lineTo(bx + bw + 3, yy); }
+  ctx.stroke();
+  ctx.fillStyle = MUTED; ctx.font = `${Math.round(12*FS)}px ${font}`; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+  for (const f of [1, 0.5, 0, -0.5, -1]) ctx.fillText(f === 0 ? '0' : fmtV(f*state.vmax, true), bx + bw + 6, y0 + P*(0.5 - 0.5*f));
+  ctx.fillStyle = INK; ctx.font = `italic ${Math.round(14*FS)}px ${font}`; ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
+  ctx.fillText('V (V)', bx - 2, y0 - 10);
+}
+
+
+/* ================= grafico di destra: 3D o spazio delle fasi ================= */
+const c3cv = $('three'), c3 = c3cv.getContext('2d');
+let W3 = 0, H3 = 0;
+function layout3D(){
+  const r = c3cv.getBoundingClientRect();
+  W3 = r.width; H3 = r.height;
+  c3cv.width = Math.max(1, Math.round(W3*dpr)); c3cv.height = Math.max(1, Math.round(H3*dpr));
+}
+const cam = { ca: 1, sa: 0, ce: 1, se: 0, S: 100, cx: 0, cy: 0 };
+function setupCam(){
+  const c = state.cam;
+  cam.ca = Math.cos(c.az); cam.sa = Math.sin(c.az); cam.ce = Math.cos(c.el); cam.se = Math.sin(c.el);
+  cam.S = Math.min(W3*0.28, H3*0.27)*c.zoom; cam.cx = W3*0.53; cam.cy = H3*0.5;
+}
+let _px = 0, _py = 0, _pd = 0;
+function proj(X, Y, Z){
+  Z -= ZC;
+  const x1 = X*cam.ca - Y*cam.sa, y1 = X*cam.sa + Y*cam.ca;
+  const up = Z*cam.ce + y1*cam.se, d = y1*cam.ce - Z*cam.se, p = 5/(5 + d);
+  _px = cam.cx + cam.S*p*x1; _py = cam.cy - cam.S*p*up; _pd = d;
+}
+function depthOf(X, Y, Z){ proj(X, Y, Z); return _pd; }
+function polyPath(ctx, pts){ ctx.beginPath(); pts.forEach((p, n) => { proj(p[0], p[1], p[2]); n ? ctx.lineTo(_px, _py) : ctx.moveTo(_px, _py); }); ctx.closePath(); }
+function seg3(ctx, a, b){ proj(a[0], a[1], a[2]); ctx.moveTo(_px, _py); proj(b[0], b[1], b[2]); ctx.lineTo(_px, _py); }
+
+const NV = NS*NS, NQ = (NS-1)*(NS-1);
+const VX = new Float32Array(NV), VY = new Float32Array(NV), VD = new Float32Array(NV), VZ = new Float32Array(NV);
+const QD = new Float32Array(NQ), order = Array.from({ length: NQ }, (_, n) => n);
+const LIGHT = (() => { const v = [-0.45, -0.35, 0.82], m = Math.hypot(...v); return v.map(a => a/m); })();
+
+function draw3DTrails(ctx, onFloor){
+  const vmax = state.vmax;
+  for (const p of tests){
+    const tr = p.trail, tv = p.trailV;
+    if (tv.length < 2) continue;
+    ctx.beginPath(); let pen = false;
+    for (let k = 0; k < tv.length; k++){
+      const x = tr[2*k], y = tr[2*k+1];
+      if (Math.abs(x) > L || Math.abs(y) > L){ pen = false; continue; }
+      let z = ZF;
+      if (!onFloor){ let t = tv[k]/vmax; if (t > 1) t = 1; if (t < -1) t = -1; z = t*ZH + 0.012; }
+      proj(x/L, y/L, z); pen ? ctx.lineTo(_px, _py) : ctx.moveTo(_px, _py); pen = true;
+    }
+    if (onFloor){ ctx.strokeStyle = tcol(p); ctx.globalAlpha = 0.45; ctx.lineWidth = 1.3; ctx.stroke(); ctx.globalAlpha = 1; }
+    else { ctx.strokeStyle = 'rgba(255,255,255,.85)'; ctx.lineWidth = 4; ctx.stroke(); ctx.strokeStyle = tcol(p); ctx.lineWidth = 2; ctx.stroke(); }
+  }
+  if (onFloor) return;
+  for (const p of tests){
+    if (Math.abs(p.x) > L || Math.abs(p.y) > L) continue;
+    let t = potential(p.x, p.y)/vmax; if (t > 1) t = 1; if (t < -1) t = -1;
+    proj(p.x/L, p.y/L, t*ZH + 0.012);
+    ctx.beginPath(); ctx.arc(_px, _py, 6, 0, 2*Math.PI); ctx.fillStyle = '#fff'; ctx.fill();
+    ctx.lineWidth = 2.6; ctx.strokeStyle = tcol(p); ctx.stroke();
+  }
+}
+
+function draw3D(){
+  const ctx = c3;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, W3, H3);
+  setupCam();
+  const font = FONT();
+  const bxw = depthOf(1, 0, 0) > depthOf(-1, 0, 0) ? 1 : -1;
+  const byw = depthOf(0, 1, 0) > depthOf(0, -1, 0) ? 1 : -1;
+  const zt = [-ZH, -ZH/2, 0, ZH/2, ZH];
+
+  ctx.lineWidth = 1;
+  polyPath(ctx, [[-1,-1,ZF],[1,-1,ZF],[1,1,ZF],[-1,1,ZF]]); ctx.fillStyle = '#f4f7fb'; ctx.fill(); ctx.strokeStyle = '#c3ccda'; ctx.stroke();
+  polyPath(ctx, [[bxw,-1,ZF],[bxw,1,ZF],[bxw,1,ZTOP],[bxw,-1,ZTOP]]); ctx.fillStyle = '#f8fafc'; ctx.fill(); ctx.stroke();
+  polyPath(ctx, [[-1,byw,ZF],[1,byw,ZF],[1,byw,ZTOP],[-1,byw,ZTOP]]); ctx.fill(); ctx.stroke();
+  ctx.strokeStyle = 'rgba(20,42,76,.09)'; ctx.beginPath();
+  for (const t of [-0.5, 0, 0.5]){ seg3(ctx, [t,-1,ZF], [t,1,ZF]); seg3(ctx, [-1,t,ZF], [1,t,ZF]); seg3(ctx, [bxw,t,ZF], [bxw,t,ZTOP]); seg3(ctx, [t,byw,ZF], [t,byw,ZTOP]); }
+  for (const z of zt){ seg3(ctx, [bxw,-1,z], [bxw,1,z]); seg3(ctx, [-1,byw,z], [1,byw,z]); }
+  ctx.stroke();
+
+  if (state.floor){
+    const s = 2/(NT-1), step = state.vmax/state.nlev;
+    ctx.lineWidth = 1;
+    for (const [k, arr] of contours){
+      ctx.beginPath();
+      for (let m = 0; m < arr.length; m += 4){
+        proj(-1 + arr[m]*s, -1 + arr[m+1]*s, ZF); ctx.moveTo(_px, _py);
+        proj(-1 + arr[m+2]*s, -1 + arr[m+3]*s, ZF); ctx.lineTo(_px, _py);
+      }
+      ctx.strokeStyle = LUTS[lutIndex(k*step)]; ctx.stroke();
+    }
+  }
+  for (const c of charges){
+    proj(c.x/L, c.y/L, ZF);
+    ctx.beginPath(); ctx.arc(_px, _py, 3.5, 0, 2*Math.PI); ctx.fillStyle = c.q > 0 ? POS : c.q < 0 ? NEG : '#8a93a6'; ctx.fill();
+  }
+  draw3DTrails(ctx, true);
+
+  const h = 2/(NS-1), vmax = state.vmax;
+  for (let j = 0; j < NS; j++) for (let i = 0; i < NS; i++){
+    const n = j*NS + i;
+    let t = gridS[n]/vmax; if (t > 1) t = 1; if (t < -1) t = -1;
+    const z = t*ZH; VZ[n] = z;
+    proj(-1 + i*h, -1 + j*h, z); VX[n] = _px; VY[n] = _py; VD[n] = _pd;
+  }
+  for (let j = 0; j < NS-1; j++) for (let i = 0; i < NS-1; i++){ const n = j*NS + i; QD[j*(NS-1) + i] = VD[n] + VD[n+1] + VD[n+NS] + VD[n+NS+1]; }
+  order.sort((a, b) => QD[b] - QD[a]);
+  ctx.lineWidth = 0.6; ctx.lineJoin = 'round';
+  for (let o = 0; o < NQ; o++){
+    const q = order[o], i = q % (NS-1), j = (q - i)/(NS-1);
+    const n00 = j*NS + i, n10 = n00 + 1, n01 = n00 + NS, n11 = n01 + 1;
+    const vAvg = (gridS[n00] + gridS[n10] + gridS[n01] + gridS[n11])/4;
+    const dz1 = VZ[n11] - VZ[n00], dz2 = VZ[n01] - VZ[n10];
+    let nx = h*(dz2 - dz1), ny = -h*(dz1 + dz2), nz = 2*h*h;
+    const nm = Math.hypot(nx, ny, nz); nx /= nm; ny /= nm; nz /= nm;
+    const sh = 0.6 + 0.4*Math.max(0, nx*LIGHT[0] + ny*LIGHT[1] + nz*LIGHT[2]);
+    const c = LUT[lutIndex(vAvg)], r = c[0]*sh|0, g = c[1]*sh|0, b = c[2]*sh|0;
+    ctx.beginPath(); ctx.moveTo(VX[n00], VY[n00]); ctx.lineTo(VX[n10], VY[n10]); ctx.lineTo(VX[n11], VY[n11]); ctx.lineTo(VX[n01], VY[n01]); ctx.closePath();
+    ctx.fillStyle = `rgb(${r},${g},${b})`; ctx.fill();
+    ctx.strokeStyle = `rgb(${r*0.86|0},${g*0.86|0},${b*0.86|0})`; ctx.stroke();
+  }
+  draw3DTrails(ctx, false);
+
+  const pr = state.probe;
+  if (pr && charges.length){
+    let t = potential(pr.x, pr.y)/vmax; if (t > 1) t = 1; if (t < -1) t = -1;
+    const X = pr.x/L, Y = pr.y/L, Z = t*ZH;
+    ctx.strokeStyle = INK; ctx.lineWidth = 1.4; ctx.setLineDash([4,4]); ctx.beginPath(); seg3(ctx, [X,Y,ZF], [X,Y,Z]); ctx.stroke(); ctx.setLineDash([]);
+    proj(X, Y, ZF); ctx.beginPath(); ctx.arc(_px, _py, 3, 0, 2*Math.PI); ctx.fillStyle = INK; ctx.fill();
+    proj(X, Y, Z); ctx.beginPath(); ctx.arc(_px, _py, 5.5, 0, 2*Math.PI); ctx.fillStyle = '#fff'; ctx.fill(); ctx.lineWidth = 2.2; ctx.strokeStyle = INK; ctx.stroke();
+  }
+
+  ctx.font = `12px ${font}`; ctx.fillStyle = MUTED; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  for (const v of [-10, -5, 0, 5, 10]){
+    proj(v/L, -byw*1.13, ZF); ctx.fillText(minus(String(v)), _px, _py);
+    proj(-bxw*1.13, v/L, ZF); ctx.fillText(minus(String(v)), _px, _py);
+  }
+  ctx.font = `italic 14px ${font}`; ctx.fillStyle = INK;
+  proj(0, -byw*1.32, ZF); ctx.fillText('x (cm)', _px, _py);
+  proj(-bxw*1.32, 0, ZF); ctx.fillText('y (cm)', _px, _py);
+  let best = null;
+  for (const [cx, cy] of [[-1,-1],[1,-1],[1,1],[-1,1]]){ proj(cx, cy, 0); if (!best || _px < best[2]) best = [cx, cy, _px]; }
+  const [zx, zy] = best;
+  ctx.strokeStyle = 'rgba(20,42,76,.45)'; ctx.lineWidth = 1; ctx.beginPath(); seg3(ctx, [zx,zy,-ZH], [zx,zy,ZH]); ctx.stroke();
+  ctx.font = `12px ${font}`; ctx.fillStyle = MUTED; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+  for (const f of [-1, -0.5, 0, 0.5, 1]){
+    proj(zx, zy, f*ZH);
+    ctx.beginPath(); ctx.moveTo(_px - 4, _py); ctx.lineTo(_px, _py); ctx.stroke();
+    ctx.fillText(f === 0 ? '0' : fmtV(f*vmax, true), _px - 7, _py);
+  }
+  proj(zx, zy, ZH); ctx.font = `italic 14px ${font}`; ctx.fillStyle = INK; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+  ctx.fillText('V (V)', _px, _py - 10);
+}
+
+function drawPhase(){
+  const ctx = c3, font = FONT();
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, W3, H3);
+  const ml = 62, mr = 20, mt = 22, mb = 44;
+  const W = Math.max(50, W3 - ml - mr), H = Math.max(50, H3 - mt - mb), x0 = ml, y0 = mt;
+  let vm = 0;
+  for (const p of tests){ for (const v of p.trailVX) vm = Math.max(vm, Math.abs(v)); vm = Math.max(vm, Math.abs(p.vx)); }
+  phaseV = Math.max(phaseV, vm*1.15, 1);
+  const X = x => x0 + (x + L)/(2*L)*W, Y = v => y0 + H/2 - v/phaseV*H/2;
+  ctx.fillStyle = '#fff'; ctx.fillRect(x0, y0, W, H);
+  // griglia
+  const vstep = [0.5, 1, 2, 5, 10, 20, 50].find(s => phaseV/s <= 5) || 100;
+  ctx.strokeStyle = 'rgba(20,42,76,.08)'; ctx.lineWidth = 1; ctx.beginPath();
+  for (let x = -L; x <= L; x += 2){ ctx.moveTo(X(x), y0); ctx.lineTo(X(x), y0 + H); }
+  for (let v = -Math.floor(phaseV/vstep)*vstep; v <= phaseV; v += vstep){ ctx.moveTo(x0, Y(v)); ctx.lineTo(x0 + W, Y(v)); }
+  ctx.stroke();
+  ctx.strokeStyle = 'rgba(20,42,76,.35)'; ctx.setLineDash([4,4]); ctx.beginPath();
+  ctx.moveTo(X(0), y0); ctx.lineTo(X(0), y0 + H); ctx.moveTo(x0, Y(0)); ctx.lineTo(x0 + W, Y(0)); ctx.stroke(); ctx.setLineDash([]);
+  // traiettorie
+  ctx.save(); ctx.beginPath(); ctx.rect(x0, y0, W, H); ctx.clip();
+  ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+  for (const p of tests){
+    const tr = p.trail, tv = p.trailVX;
+    if (tv.length < 2) continue;
+    ctx.beginPath(); ctx.moveTo(X(tr[0]), Y(tv[0]));
+    for (let k = 1; k < tv.length; k++) ctx.lineTo(X(tr[2*k]), Y(tv[k]));
+    ctx.lineTo(X(p.x), Y(p.vx));
+    ctx.strokeStyle = tcol(p); ctx.lineWidth = 1.5; ctx.globalAlpha = 0.85; ctx.stroke(); ctx.globalAlpha = 1;
+  }
+  for (const p of tests){
+    ctx.beginPath(); ctx.arc(X(p.x0), Y(p.vx0), 3.5, 0, 2*Math.PI); ctx.fillStyle = '#fff'; ctx.fill(); ctx.strokeStyle = tcol(p); ctx.lineWidth = 1.5; ctx.stroke();
+    drawBall(ctx, X(p.x), Y(p.vx), tcol(p), p === selTest);
+  }
+  ctx.restore();
+  ctx.strokeStyle = INK; ctx.lineWidth = 1.2; ctx.strokeRect(x0, y0, W, H);
+  ctx.font = `12px ${font}`; ctx.fillStyle = MUTED;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  for (let x = -L; x <= L; x += (W > 420 ? 2 : 5)) ctx.fillText(minus(String(x)), X(x), y0 + H + 6);
+  ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+  for (let v = -Math.floor(phaseV/vstep)*vstep; v <= phaseV; v += vstep) ctx.fillText(minus(NF[vstep < 1 ? 1 : 0].format(v)), x0 - 6, Y(v));
+  ctx.fillStyle = INK; ctx.font = `italic 14px ${font}`;
+  ctx.textAlign = 'right'; ctx.textBaseline = 'top'; ctx.fillText('x (cm)', x0 + W, y0 + H + 22);
+  ctx.save(); ctx.translate(x0 - 44, y0 + H/2); ctx.rotate(-Math.PI/2); ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('vₓ (cm/s)', 0, 0); ctx.restore();
+  if (!tests.length){
+    ctx.fillStyle = MUTED; ctx.font = `15px ${font}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('Aggiungi una carica di prova per vedere', x0 + W/2, y0 + H/2 - 12);
+    ctx.fillText('il suo moto nello spazio delle fasi', x0 + W/2, y0 + H/2 + 12);
+  }
+}
+function drawRight(){ if (W3 < 10) return; state.right === 'phase' ? drawPhase() : draw3D(); }
+
+
+/* ================= ciclo di disegno ================= */
+let physicsDirty = true, needTop = true, need3D = true, rafPending = false;
+function schedule(){ if (!rafPending){ rafPending = true; requestAnimationFrame(frame); } }
+function markPhysics(){ physicsDirty = true; schedule(); }
+function redraw(){ needTop = need3D = true; schedule(); }
+function frame(ts){
+  rafPending = false;
+  if (physicsDirty){
+    fillGrid(gridT, NT, view); fillGrid(gridS, NS);
+    buildContours(); updateHeat();
+    if (state.field === 'lines') computeFieldLines();
+    refreshTests();
+    physicsDirty = false; needTop = need3D = true;
+    updateReadout(); updateTestUI();
+  }
+  if (sim.running){
+    const dt = sim.lastTs ? Math.min(0.05, (ts - sim.lastTs)/1000) : 0;
+    sim.lastTs = ts;
+    if (dt > 0) stepSim(dt*sim.speed);
+    needTop = need3D = true; updateTestUI();
+  }
+  if (basin.active){ basinWork(sim.running ? 14 : 30); needTop = true; }
+  if (state.autoRot && state.right === '3d'){ state.cam.az += 0.004; need3D = true; }
+  if (needTop) drawTop();
+  if (need3D) drawRight();
+  needTop = need3D = false;
+  if ((state.autoRot && state.right === '3d') || sim.running || basin.active) schedule();
+}
+
+
+const r2 = v => Math.round(v*100)/100 || 0;
+const ring = (N, R, q) => Array.from({ length: N }, (_, k) => [r2(R*Math.cos(2*Math.PI*k/N)), r2(R*Math.sin(2*Math.PI*k/N)), q]);
+const tri = (r, q) => [0, 1, 2].map(k => [r2(r*Math.cos(Math.PI/2 + 2*Math.PI*k/3)), r2(r*Math.sin(Math.PI/2 + 2*Math.PI*k/3)), q]);
+const PRESETS = {
+  dipolo:     [[-3, 0, 2], [3, 0, -2]],
+  uguali:     [[-3, 0, 2], [3, 0, 2]],
+  asimm:      [[-3, 0, 4], [3, 0, -1]],
+  singola:    [[0, 0, 2]],
+  quadrupolo: [[-3, 3, 2], [3, 3, -2], [-3, -3, -2], [3, -3, 2]],
+  piani:      [-6, -4, -2, 0, 2, 4, 6].flatMap(y => [[-3, y, 1], [3, y, -1]])
+};
+
+const vcirc = (Q, r) => Math.sqrt(ACC*Q/r);     // velocità circolare per q0 = 1 nC, m = 1 g
+const BOWL = ring(16, 8.5, 3);
+const SCENARI = {
+  circolare:    { src: [[0, 0, -2]], speed: 4, tests: [[5, 0, 0, vcirc(2, 5)]] },
+  ellittiche:   { src: [[0, 0, -2]], speed: 4, tests: [0.5, 0.7, 0.9].map(f => [7, 0, 0, f*vcirc(2, 7)]) },
+  rosetta:      { src: [[-1.5, 0, -1.5], [1.5, 0, -1.5]], speed: 8, tests: [[0, 6, 0.8*vcirc(3, 6), 0]] },
+  rutherford:   { src: [[0, 0, 4]], speed: 1, tests: [-4, -3, -2, -1, 0, 1, 2, 3, 4].map(y => [-9.5, y, 7, 0]) },
+  ferma:        { src: [[-3, 0, 2], [3, 0, -2]], speed: 1, fl: true, tests: [[-2, 2, 0, 0]] },
+  condensatore: { src: PRESETS.piani, speed: 0.5, tests: [14, 17, 21, 28].map(v => [-1.5, -9.5, 0, v]) },
+  puntofisso:   { src: BOWL, damp: 'visc', gamma: 0.4, speed: 2, scale: [8000, 25], right: 'phase', tests: [[5, 2, 1, 1], [-6, -3, 0, 0], [0, 6.5, 2, 0]] },
+  // Nessuna carica di prova e nessuna mappa all'avvio: prima le prove a mano e la «scommessa» sui punti sfida.
+  // Punti sfida, nell'ordine: ovvi (cade sulla più vicina), ingannevoli (finisce su una carica lontana),
+  // equilibrio instabile al centro, confine (due partenze vicine, due esiti). Esiti verificati in test/fisica.test.js.
+  bacini:       { src: [...BOWL, ...tri(3, -1)], damp: 'visc', gamma: 0.2, speed: 2, scale: [8000, 25], clickLaunch: true, tests: [],
+                  challenges: [[0, 5.5], [-5, -2.5], [5, -2.5], [-1.5, -6], [-4.5, 3.5], [4.5, 3.5], [0, 0], [0.5, 0], [-0.5, 0]] },
+  ciclo:        { src: BOWL, damp: 'active', gamma: 0.6, vstar: 2.0, speed: 4, scale: [8000, 25], right: 'phase', tests: [[0.5, 0, 0, 0.3], [6.5, 0, 0, 1], [-6, 0, 0, -1.5]] },
+  caos:         { src: [...BOWL, ...tri(2.2, 1.5)], speed: 4, scale: [8000, 25], right: 'phase', tests: [[0.3, -5.5, 3.5, 0.4], [0.3, -5.48, 3.5, 0.4], [0.3, -5.5, 3.0, 0.4]] },
+  attrattore:   { src: [...BOWL, ...tri(3, 1.5)], damp: 'active', gamma: 0.5, vstar: 2.5, speed: 8, scale: [8000, 25], right: 'phase', tests: [[0.3, -5.5, 2.5, 0.4], [0.3, -5.48, 2.5, 0.4], [5, 4, 0, -1]] },
+  // Ostacoli più lontani e motore più lento: attrattore compatto a tre lobi, raggiunto in circa 100 s da partenze ai lati opposti.
+  // Con l'attrito «Nessuno» le stesse partenze vagano invece su gran parte dell'anello: confronto diretto con il biliardo.
+  attrattore2:  { src: [...BOWL, ...tri(4, 1.5)], damp: 'active', gamma: 0.6, vstar: 1.5, speed: 8, scale: [8000, 25], right: 'phase', tests: [[0.3, -6.5, 0, 0], [6, 3, 0, -1.5], [-6.5, 2.5, 0, 0], [-1, 6.5, 3, 0]] },
+  // Altre configurazioni per i bacini: quattro cariche uguali sul raggio di 3 cm; tre cariche diverse (−2, −1, −0,5 nC), mappa senza simmetria.
+  bacini4:      { src: [...BOWL, [2.12, 2.12, -1], [-2.12, 2.12, -1], [-2.12, -2.12, -1], [2.12, -2.12, -1]], damp: 'visc', gamma: 0.2, speed: 2, scale: [8000, 25], clickLaunch: true, tests: [] },
+  baciniDiverse:{ src: [...BOWL, [0, 3, -2], [-2.6, -1.5, -1], [2.6, -1.5, -0.5]], damp: 'visc', gamma: 0.2, speed: 2, scale: [8000, 25], clickLaunch: true, tests: [] }
+};
+
+/* ================= interfaccia ================= */
+const toastEl = $('toast'); let toastT = 0;
+function toast(msg){ toastEl.textContent = msg; toastEl.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => toastEl.classList.remove('show'), 2600); }
+
+function updateReadout(){
+  const p = state.probe;
+  if (!p){ ['rx','ry','rv','re'].forEach(id => $(id).textContent = '—'); return; }
+  $('rx').textContent = fmtCm(p.x) + ' cm'; $('ry').textContent = fmtCm(p.y) + ' cm';
+  if (!charges.length){ $('rv').textContent = '0 V'; $('re').textContent = '0 V/m'; return; }
+  if (nearestDist(p.x, p.y) < RMIN){ $('rv').textContent = 'molto grande'; $('re').textContent = 'molto grande'; return; }
+  $('rv').textContent = fmtV(potential(p.x, p.y), true) + ' V';
+  efieldRaw(p.x, p.y); $('re').textContent = fmtE(Math.hypot(_ex, _ey)*KE);
+}
+// aggancio a 0,5 cm (o 0,1 cm senza griglia); con lo zoom il passo si riduce con la finestra
+function snapV(v){ const s = Math.min(state.snap ? 0.5 : 0.1, niceStep(view.h/20)); return Math.round(Math.round(v/s)*s*1e6)/1e6; }
+const clampL = v => Math.max(-L, Math.min(L, v));
+function select(c){ selected = c; lastSel = 'charge'; syncUI(); redraw(); }
+function changed(){ basinClear(); markPhysics(); syncUI(); }
+
+function syncUI(){
+  const box = $('chips'); box.innerHTML = '';
+  charges.forEach((c, n) => {
+    const b = document.createElement('button');
+    b.className = 'chip' + (c === selected ? ' sel' : '');
+    b.innerHTML = `<i class="dot ${c.q > 0 ? 'p' : c.q < 0 ? 'n' : 'z'}"></i>Q${n+1} <b>${fmtQ(c.q)}</b><span>(${fmtCm(c.x)}; ${fmtCm(c.y)}) cm</span>`;
+    b.addEventListener('click', () => select(c));
+    box.appendChild(b);
+  });
+  $('count').textContent = `(${charges.length})`;
+  if (!charges.length) box.innerHTML = '<p class="muted" style="margin:4px 0">Nessuna carica. Clicca sulla mappa o scegli una configurazione.</p>';
+  const has = !!selected && charges.includes(selected);
+  if (!has) selected = null;
+  $('selBox').hidden = !has; $('noSel').hidden = has;
+  if (has){
+    $('selName').textContent = 'Q' + (charges.indexOf(selected) + 1);
+    $('qRange').value = selected.q; $('qOut').textContent = fmtQ(selected.q);
+    if (document.activeElement !== $('xNum')) $('xNum').value = selected.x;
+    if (document.activeElement !== $('yNum')) $('yNum').value = selected.y;
+  }
+}
+
+/* --- interazione con la mappa --- */
+let drag = null, probeDrag = false, tdrag = null;
+function eventPos(ev){ const r = topCv.getBoundingClientRect(); return [ev.clientX - r.left, ev.clientY - r.top]; }
+function insidePlot(sx, sy){ return sx >= TL.x0 && sx <= TL.x0 + TL.P && sy >= TL.y0 && sy <= TL.y0 + TL.P; }
+function chargeAt(sx, sy){
+  for (let n = charges.length - 1; n >= 0; n--){ const c = charges[n]; if (Math.hypot(sx - toSX(c.x), sy - toSY(c.y)) <= chargeRadius(c) + 5) return c; }
+  return null;
+}
+function testAt(sx, sy){
+  for (let n = tests.length - 1; n >= 0; n--){ const p = tests[n]; if (Math.hypot(sx - toSX(p.x), sy - toSY(p.y)) <= 10) return p; }
+  return null;
+}
+function handleAt(sx, sy){
+  if (sim.t > 0 || !selTest) return null;
+  const [hx, hy] = handlePos(selTest);
+  return Math.hypot(sx - toSX(hx), sy - toSY(hy)) <= 10 ? selTest : null;
+}
+function setProbe(sx, sy){ state.probe = insidePlot(sx, sy) ? { x: toX(sx), y: toY(sy) } : null; updateReadout(); redraw(); }
+function grab(ev){ topCv.setPointerCapture(ev.pointerId); topCv.classList.add('dragging'); }
+topCv.addEventListener('pointerdown', ev => {
+  const [sx, sy] = eventPos(ev);
+  if (state.tool === 'zoom'){
+    if (insidePlot(sx, sy)){ zsel = { sx0: sx, sy0: sy, sx1: sx, sy1: sy }; topCv.setPointerCapture(ev.pointerId); }
+    return;
+  }
+  let p = handleAt(sx, sy);
+  if (p){ tdrag = { p, mode: 'vel' }; grab(ev); return; }
+  p = testAt(sx, sy);
+  if (p){ selectTest(p); if (sim.t === 0){ tdrag = { p, mode: 'pos' }; grab(ev); } return; }
+  const c = chargeAt(sx, sy);
+  if (c){ selected = c; lastSel = 'charge'; drag = c; grab(ev); syncUI(); redraw(); return; }
+  if (!insidePlot(sx, sy)) return;
+  let x = clampL(snapV(toX(sx))), y = clampL(snapV(toY(sy)));
+  if (state.tool === 'test' && chal.list){     // un clic vicino a un anello numerato prende esattamente il punto sfida
+    for (const [cx, cy] of chal.list) if (Math.hypot(sx - toSX(cx), sy - toSY(cy)) <= 11){ x = cx; y = cy; break; }
+  }
+  if (state.tool === 'add'){
+    const nc = addCharge(x, y, state.newSign*Math.max(0.5, Math.min(10, state.newMag)));
+    if (nc){ selected = nc; lastSel = 'charge'; drag = nc; grab(ev); changed(); }
+  } else if (state.tool === 'test'){
+    if (state.clickLaunch){ launchTrial(x, y); return; }
+    const np = addTest(x, y, 0, 0);
+    if (np){ selectTest(np); tdrag = { p: np, mode: 'vel' }; grab(ev); resetSim(); }
+  } else { probeDrag = true; topCv.setPointerCapture(ev.pointerId); setProbe(sx, sy); }
+});
+topCv.addEventListener('pointermove', ev => {
+  const [sx, sy] = eventPos(ev);
+  if (zsel){ zsel.sx1 = sx; zsel.sy1 = sy; needTop = true; schedule(); return; }
+  if (tdrag){
+    const p = tdrag.p;
+    if (tdrag.mode === 'pos'){
+      const nx = clampL(snapV(toX(sx))), ny = clampL(snapV(toY(sy)));
+      if (nx !== p.x0 || ny !== p.y0){ p.x0 = nx; p.y0 = ny; resetSim(); }
+    } else {
+      let vx = (toX(sx) - p.x0)/VS, vy = (toY(sy) - p.y0)/VS;
+      if (Math.hypot(vx, vy) < 0.3){ vx = 0; vy = 0; } else { vx = Math.round(vx*10)/10; vy = Math.round(vy*10)/10; }
+      if (vx !== p.vx0 || vy !== p.vy0){ setVel(p, vx, vy); resetSim(); }
+    }
+    return;
+  }
+  if (drag){
+    const nx = clampL(snapV(toX(sx))), ny = clampL(snapV(toY(sy)));
+    if (nx !== drag.x || ny !== drag.y){ drag.x = nx; drag.y = ny; changed(); }
+    setProbe(sx, sy); return;
+  }
+  if (probeDrag || ev.pointerType === 'mouse') setProbe(sx, sy);
+  topCv.classList.toggle('over-charge', !!(chargeAt(sx, sy) || testAt(sx, sy) || handleAt(sx, sy)));
+});
+function endDrag(){ drag = null; tdrag = null; probeDrag = false; zsel = null; topCv.classList.remove('dragging'); }
+topCv.addEventListener('pointerup', () => {
+  if (zsel){
+    // riquadro trascinato: si ingrandisce il quadrato che lo contiene; clic semplice: zoom ×2 attorno al punto
+    const z = zsel, s = Math.max(Math.abs(z.sx1 - z.sx0), Math.abs(z.sy1 - z.sy0));
+    if (s < 8) zoomBy(0.5, toX(z.sx0), toY(z.sy0));
+    else setView({ cx: toX((z.sx0 + z.sx1)/2), cy: toY((z.sy0 + z.sy1)/2), h: +(s/TL.P*view.h).toPrecision(2) });
+    redraw();
+  }
+  endDrag();
+});
+topCv.addEventListener('pointercancel', () => { endDrag(); redraw(); });
+topCv.addEventListener('pointerleave', ev => { if (!drag && !tdrag && ev.pointerType === 'mouse'){ state.probe = null; updateReadout(); redraw(); } });
+let wheelT = 0;
+topCv.addEventListener('wheel', ev => {
+  const [sx, sy] = eventPos(ev);
+  if (ev.ctrlKey || ev.metaKey || ev.shiftKey || state.tool === 'zoom'){
+    // zoom a rotella (o pizzico sul trackpad) attorno al cursore; una serie di scatti conta come un solo passo per «Indietro»
+    if (!insidePlot(sx, sy)) return;
+    ev.preventDefault();
+    const d = ev.deltaY || ev.deltaX; if (!d) return;
+    const now = performance.now(), push = now - wheelT > 500; wheelT = now;
+    zoomBy(Math.exp(Math.max(-0.4, Math.min(0.4, d*0.002))), toX(sx), toY(sy), push);
+    return;
+  }
+  const c = chargeAt(sx, sy);
+  if (!c) return;
+  ev.preventDefault();
+  const q = Math.max(-10, Math.min(10, Math.round((c.q + (ev.deltaY < 0 ? 0.5 : -0.5))*2)/2));
+  if (q !== c.q){ c.q = q; selected = c; lastSel = 'charge'; changed(); }
+}, { passive: false });
+
+/* --- interazione col grafico di destra --- */
+let rot = null;
+c3cv.addEventListener('pointerdown', ev => { if (state.right !== '3d') return; rot = [ev.clientX, ev.clientY]; c3cv.setPointerCapture(ev.pointerId); c3cv.classList.add('dragging'); });
+c3cv.addEventListener('pointermove', ev => {
+  if (!rot) return;
+  const dx = ev.clientX - rot[0], dy = ev.clientY - rot[1]; rot = [ev.clientX, ev.clientY];
+  state.cam.az += dx*0.009; state.cam.el = Math.max(0.05, Math.min(Math.PI/2, state.cam.el + dy*0.009));
+  need3D = true; schedule();
+});
+const endRot = () => { rot = null; c3cv.classList.remove('dragging'); };
+c3cv.addEventListener('pointerup', endRot);
+c3cv.addEventListener('pointercancel', endRot);
+c3cv.addEventListener('wheel', ev => {
+  if (state.right !== '3d') return;
+  ev.preventDefault();
+  state.cam.zoom = Math.max(0.5, Math.min(2.6, state.cam.zoom*Math.exp(-ev.deltaY*0.0012)));
+  need3D = true; schedule();
+}, { passive: false });
+c3cv.addEventListener('dblclick', () => { if (state.right === '3d'){ Object.assign(state.cam, CAM0); need3D = true; schedule(); } });
+$('camReset').addEventListener('click', () => { Object.assign(state.cam, CAM0); need3D = true; schedule(); });
+$('camTop').addEventListener('click', () => { Object.assign(state.cam, { az: 0, el: Math.PI/2 }); need3D = true; schedule(); });
+$('camSpin').addEventListener('click', e => {
+  state.autoRot = !state.autoRot;
+  e.currentTarget.classList.toggle('on', state.autoRot); e.currentTarget.setAttribute('aria-pressed', state.autoRot);
+  schedule();
+});
+
+/* --- comandi generici --- */
+function segmented(id, cb){
+  const el = $(id);
+  el.addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    el.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b));
+    cb(b.dataset.v);
+  });
+}
+function setSeg(id, v){ $(id).querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.v === String(v))); }
+function setTool(v){
+  state.tool = v; setSeg('toolSeg', v);
+  $('toolTest').classList.toggle('on', v === 'test'); $('zoomTool').classList.toggle('on', v === 'zoom');
+  topCv.classList.toggle('zooming', v === 'zoom');
+}
+
+/* --- zoom della mappa 2D --- */
+const viewStack = [];
+const sameView = (a, b) => a.cx === b.cx && a.cy === b.cy && a.h === b.h;
+const r6 = v => Math.round(v*1e6)/1e6;
+function setView(v, push = true){
+  if (v.h < HMIN*0.999) toast('Ingrandimento massimo: a scale più piccole il calcolo numerico non è più affidabile');
+  const h = r6(Math.max(HMIN, Math.min(L, v.h))), s = niceStep(h/20);     // centro su una griglia (1/20 della finestra): coordinate leggibili
+  const c = u => r6(Math.max(-L + h, Math.min(L - h, Math.round(u/s)*s)));
+  const nv = { cx: c(v.cx), cy: c(v.cy), h };
+  if (sameView(nv, view)) return;
+  if (push){ viewStack.push(view); if (viewStack.length > 40) viewStack.shift(); }
+  view = nv; state.probe = null;
+  markPhysics(); updateZoomUI(); updateBasinUI(); updateReadout();
+  if (state.basinFollow && (basin.active || (basin.data && basin.show))) basinFollow();
+}
+// Con una mappa in vista, dopo uno zoom la mappa si rifà nella nuova finestra (stesse partenze per lato, celle più piccole).
+// Si aspetta che lo zoom si fermi (rotella), e si riusa una mappa già calcolata se c'è.
+let followT = 0;
+function basinFollow(){
+  clearTimeout(followT);
+  followT = setTimeout(() => { if (!(basin.data && sameView(basin.win, view)) && !basinRestore(view)) basinStart(); }, 350);
+}
+// ingrandimento di un fattore f (< 1 ingrandisce) tenendo fermo il punto (x, y)
+function zoomBy(f, x, y, push = true){ setView({ cx: x + (view.cx - x)*f, cy: y + (view.cy - y)*f, h: view.h*f }, push); }
+function zoomBack(){ if (viewStack.length) setView(viewStack.pop(), false); }
+function resetView(){ viewStack.length = 0; if (!sameView(view, VIEW0)){ view = { ...VIEW0 }; markPhysics(); } updateZoomUI(); }
+function fmtWin(w){
+  const d = Math.max(1, Math.ceil(-Math.log10(w.h)) + 2), f = v => minus(String(+v.toFixed(d)).replace('.', ','));
+  return `x ∈ [${f(w.cx - w.h)}; ${f(w.cx + w.h)}], y ∈ [${f(w.cy - w.h)}; ${f(w.cy + w.h)}] cm`;
+}
+function updateZoomUI(){
+  const full = sameView(view, VIEW0);
+  $('zoomStatus').textContent = full ? 'Si vede tutta la mappa.' : `Finestra: ${fmtWin(view)} · zoom ×${SIG3.format(L/view.h)}`;
+  $('zoomBack').disabled = !viewStack.length; $('zoomAll').disabled = full; $('zoomOut').disabled = full;
+  $('zoomIn').disabled = view.h <= HMIN;
+  $('zoomCalc').textContent = sameView(view, VIEW0) ? 'Calcola la mappa' : 'Calcola la mappa qui';
+}
+$('zoomTool').addEventListener('click', () => setTool(state.tool === 'zoom' ? 'test' : 'zoom'));
+$('zoomIn').addEventListener('click', () => zoomBy(0.5, view.cx, view.cy));
+$('zoomOut').addEventListener('click', () => zoomBy(2, view.cx, view.cy));
+$('zoomBack').addEventListener('click', zoomBack);
+$('zoomAll').addEventListener('click', () => setView(VIEW0));
+$('zoomCalc').addEventListener('click', () => { if (!basinRestore(view)) basinStart(); });
+$('optFollow').addEventListener('change', e => { state.basinFollow = e.target.checked; });
+function setRight(v){
+  state.right = v; setSeg('rightSeg', v);
+  $('camTools').hidden = v !== '3d';
+  $('rightTitle').textContent = v === '3d' ? 'Superficie del potenziale in 3D' : 'Spazio delle fasi (x, vₓ)';
+  $('rightFoot').innerHTML = v === '3d'
+    ? '<span>Trascina per ruotare, rotella per lo zoom. Oltre ±V<sub>max</sub> la superficie è troncata.</span>'
+    : '<span>Ogni punto del grafico è uno stato della carica di prova: posizione <i>x</i> e velocità <i>v<sub>x</sub></i>. Il cerchietto vuoto è lo stato iniziale.</span>';
+  $('layout3dBtn').textContent = v === '3d' ? 'Solo 3D' : 'Solo fasi';
+  c3cv.classList.toggle('rotatable', v === '3d');
+  need3D = true; schedule();
+  if (v === '3d' && state.autoRot) schedule();
+}
+function setScale(vmax, nlev){
+  state.vmax = vmax; state.nlev = nlev;
+  $('vmax').value = Math.round(50*Math.log10(vmax/100)); $('nlev').value = nlev;
+  syncScale(); markPhysics();
+}
+
+/* --- editor della carica selezionata --- */
+$('qRange').addEventListener('input', e => { if (selected){ selected.q = parseFloat(e.target.value); changed(); } });
+$('flip').addEventListener('click', () => { if (selected){ selected.q = -selected.q; changed(); } });
+$('del').addEventListener('click', deleteSelected);
+function deleteSelected(){ if (!selected) return; charges = charges.filter(c => c !== selected); selected = null; changed(); }
+for (const [id, key] of [['xNum','x'], ['yNum','y']]){
+  $(id).addEventListener('input', e => { const v = parseFloat(String(e.target.value).replace(',', '.')); if (selected && isFinite(v)){ selected[key] = clampL(v); changed(); } });
+}
+segmented('toolSeg', v => setTool(v));
+segmented('signSeg', v => { state.newSign = parseInt(v, 10); });
+segmented('fieldSeg', v => { state.field = v; markPhysics(); });
+segmented('rightSeg', v => setRight(v));
+$('newMag').addEventListener('input', e => { const v = parseFloat(e.target.value); if (isFinite(v)) state.newMag = v; });
+
+/* --- scala e opzioni --- */
+const vmaxFromSlider = p => { const raw = 100*Math.pow(10, p/50); const e = Math.pow(10, Math.floor(Math.log10(raw)) - 1); return Math.round(raw/e)*e; };
+function syncScale(){
+  $('vmaxOut').textContent = '±' + NF[0].format(state.vmax) + ' V';
+  $('nlevOut').textContent = state.nlev;
+  $('dvOut').textContent = fmtV(state.vmax/state.nlev) + ' V';
+}
+$('vmax').addEventListener('input', e => { state.vmax = vmaxFromSlider(+e.target.value); syncScale(); markPhysics(); });
+$('nlev').addEventListener('input', e => { state.nlev = +e.target.value; syncScale(); markPhysics(); });
+for (const [id, key] of Object.entries({ optFill: 'fill', optZero: 'hlZero', optProbe: 'hlProbe', optLabels: 'labels', optSnap: 'snap', optFloor: 'floor' })){
+  $(id).addEventListener('change', e => { state[key] = e.target.checked; redraw(); });
+}
+
+/* --- configurazioni (scheda 1) --- */
+function loadPreset(name){
+  charges = []; selected = null;
+  resetView(); chal.list = null; chal.cur = chal.reached = -1; renderChallenges();
+  for (const [x, y, q] of PRESETS[name]) addCharge(x, y, q);
+  if (state.vmax > 3000) setScale(1000, 10);
+  changed();
+}
+$('presets').addEventListener('click', e => { const b = e.target.closest('button'); if (b) loadPreset(b.dataset.p); });
+$('clearAll').addEventListener('click', () => { charges = []; selected = null; changed(); });
+
+/* --- simulazione --- */
+const anyActive = () => tests.some(p => p.status === 'ready' || p.status === 'moving');
+function selectTest(p){ selTest = p; lastSel = 'test'; updateTestUI(); redraw(); }
+function deleteTest(p){ tests = tests.filter(q => q !== p); if (selTest === p) selTest = null; resetSim(); }
+// Lancio con un clic (prove sui bacini): la carica parte da ferma senza azzerare le altre in moto.
+// Delle prove finite resta solo l'ultima (per confrontare due partenze vicine) e il punto colorato.
+function launchTrial(x, y){
+  if (nearestDist(x, y) < HIT_R){ toast('Troppo vicino a una carica: scegli un altro punto'); return; }
+  const done = tests.filter(p => p.status !== 'ready' && p.status !== 'moving');
+  tests = tests.filter(p => p.status === 'ready' || p.status === 'moving' || p === done[done.length - 1]);
+  if (!anyActive()){ sim.t = 0; phaseV = 1; }
+  const p = addTest(x, y, 0, 0); if (!p) return;
+  selTest = p; lastSel = 'test';
+  sim.running = true; sim.lastTs = 0; updateTestUI(); redraw(); schedule();
+}
+function startSim(){
+  if (!tests.length){ setTool('test'); toast('Clicca sulla mappa per posizionare una carica di prova'); return; }
+  if (!anyActive()) resetSim();
+  sim.running = true; sim.lastTs = 0; updateTestUI(); schedule();
+}
+function setIfIdle(id, v){ if (document.activeElement !== $(id)) $(id).value = v; }
+function updateTestUI(){
+  $('simTime').textContent = NF[1].format(sim.t) + ' s';
+  $('simPlay').textContent = sim.running ? 'Pausa' : (sim.t > 0 && anyActive() ? 'Riprendi' : 'Avvia');
+  if (selTest && !tests.includes(selTest)) selTest = null;
+  const p = selTest;
+  $('testBox').hidden = !p; $('noTest').hidden = !!p;
+  if (!p) return;
+  $('testName').textContent = 'P' + (tests.indexOf(p) + 1); $('testName').style.color = tcol(p);
+  $('testStatus').textContent = statusText(p);
+  setIfIdle('tx', p.x0); setIfIdle('ty', p.y0);
+  const v0 = Math.hypot(p.vx0, p.vy0);
+  setIfIdle('tv', Math.round(v0*100)/100); setIfIdle('ta', Math.round(p.ang));
+  $('p0Out').textContent = fmtSci(sim.m*v0*1e-5) + ' kg·m/s';
+  const v = Math.hypot(p.vx, p.vy), Kj = 0.05*sim.m*v*v, U = sim.q0*potential(p.x, p.y)*1e-3;
+  $('eV').textContent = fmtSig(v) + ' cm/s'; $('eK').textContent = fmtSig(Kj) + ' µJ';
+  $('eU').textContent = fmtSig(U) + ' µJ'; $('eE').textContent = fmtSig(Kj + U) + ' µJ';
+}
+$('toolTest').addEventListener('click', () => setTool('test'));
+$('simPlay').addEventListener('click', () => { if (sim.running){ sim.running = false; updateTestUI(); } else startSim(); });
+$('simReset').addEventListener('click', resetSim);
+$('simClear').addEventListener('click', () => { tests = []; selTest = null; resetSim(); });
+$('testDel').addEventListener('click', () => { if (selTest) deleteTest(selTest); });
+$('q0').addEventListener('input', e => { const v = parseFloat(e.target.value); if (isFinite(v)){ sim.q0 = Math.max(-5, Math.min(5, v)); basinClear(); resetSim(); } });
+$('mass').addEventListener('input', e => { const v = parseFloat(e.target.value); if (isFinite(v) && v > 0){ sim.m = Math.min(20, v); basinClear(); resetSim(); } });
+for (const [id, key] of [['tx','x0'], ['ty','y0']]){
+  $(id).addEventListener('input', e => { const v = parseFloat(e.target.value); if (selTest && isFinite(v)){ selTest[key] = clampL(v); resetSim(); } });
+}
+$('tv').addEventListener('input', e => { const v = parseFloat(e.target.value); if (selTest && isFinite(v) && v >= 0){ setPolar(selTest, Math.min(60, v), selTest.ang); resetSim(); } });
+$('ta').addEventListener('input', e => { const a = parseFloat(e.target.value); if (selTest && isFinite(a)){ setPolar(selTest, Math.hypot(selTest.vx0, selTest.vy0), a); resetSim(); } });
+segmented('speedSeg', v => { sim.speed = parseFloat(v); });
+$('optVF').addEventListener('change', e => { sim.showVF = e.target.checked; redraw(); });
+$('optFL').addEventListener('change', e => { sim.showFL = e.target.checked; tests.forEach(p => { p.fl = sim.showFL ? fieldLineFrom(p.x0, p.y0) : null; }); redraw(); });
+
+/* --- attrito (scheda 3) --- */
+const DAMP_HELP = {
+  none: 'Nessuna forza oltre a quella elettrica: l\'energia totale K + U si conserva.',
+  visc: 'Forza F = −mγv, opposta alla velocità, come la resistenza di un fluido: la carica perde energia.',
+  active: 'Forza F = mγ(1 − v²/v*²)v: spinge la carica quando è più lenta di v* e la frena quando è più veloce. È un «motore» che fornisce e toglie energia, come nell\'oscillatore di van der Pol.'
+};
+function setDamp(mode, gamma, vstar){
+  sim.damp = mode;
+  if (gamma != null) sim.gamma = gamma;
+  if (vstar != null) sim.vstar = vstar;
+  setSeg('dampSeg', mode);
+  $('gamma').value = sim.gamma; $('vstar').value = sim.vstar;
+  $('gOut').textContent = NF[2].format(sim.gamma) + ' s⁻¹';
+  $('vsOut').textContent = NF[1].format(sim.vstar) + ' cm/s';
+  $('gammaBox').hidden = mode === 'none'; $('vstarBox').hidden = mode !== 'active';
+  $('dampHelp').textContent = DAMP_HELP[mode];
+  const badge = $('dampBadge');
+  badge.hidden = mode === 'none';
+  badge.textContent = mode === 'visc' ? `Attrito viscoso · γ = ${NF[2].format(sim.gamma)} s⁻¹`
+    : `Attrito attivo · γ = ${NF[2].format(sim.gamma)} s⁻¹ · v* = ${NF[1].format(sim.vstar)} cm/s`;
+  $('energyNote').hidden = mode === 'none';
+  $('energyNote').textContent = mode === 'visc' ? 'Con l\'attrito viscoso l\'energia totale diminuisce.' : 'Con l\'attrito attivo l\'energia totale non si conserva.';
+  basinClear();
+}
+segmented('dampSeg', v => { setDamp(v); resetSim(); });
+$('gamma').addEventListener('input', e => { setDamp(sim.damp, parseFloat(e.target.value)); resetSim(); });
+$('vstar').addEventListener('input', e => { setDamp(sim.damp, null, parseFloat(e.target.value)); resetSim(); });
+
+/* --- bacini: interfaccia --- */
+const fmtPt = v => Number.isInteger(Math.round(v*1e6)/1e5) ? fmtCm(v) : minus(String(+v.toFixed(3)).replace('.', ','));   // più cifre solo se servono (zoom)
+const at = (x, y) => `(${fmtPt(x)}; ${fmtPt(y)})`;
+function outcomeText(a){
+  if (a.kind === 'q') return `finisce su ${a.letter}, ${placeName(a.x, a.y)}`;
+  return Math.hypot(a.x, a.y) < 0.5 ? 'resta ferma al centro (equilibrio)' : `si ferma in ${at(a.x, a.y)} (equilibrio)`;
+}
+function trialDone(p, k){
+  const a = attractors[k];
+  $('trialStatus').innerHTML = `<span class="sw" style="background:${a.col}"></span>Partenza da ${at(p.x0, p.y0)}: ${outcomeText(a)}.`;
+  updateBasinUI(); needTop = true;
+}
+function updateBasinUI(){
+  const N = basin.N, done = basin.data && !basin.active, bw = basin.win;
+  $('basinBar').style.width = basin.data ? Math.round(basin.row/N*100) + '%' : '0%';
+  const here = !sameView(view, VIEW0) && !(basin.data && sameView(bw, view));
+  $('basinGo').textContent = basin.active ? 'Calcolo in corso…' : here ? 'Calcola la mappa qui' : basin.data ? 'Ricalcola' : 'Calcola la mappa';
+  const where = sameView(bw, VIEW0) ? '' : ` in ${fmtWin(bw)} (cella di ${SIG3.format(2*bw.h/N*10)} mm)`;
+  $('basinStatus').textContent = basin.active ? `Calcolo: ${Math.round(basin.row/N*100)}% (${N}×${N} partenze da ferma${where})`
+    : done ? `Fatto: ${N}×${N} partenze da ferma${where}.` + (sameView(bw, view) ? '' : ' Con lo zoom attuale si vede solo una parte della mappa, o niente.')
+    : 'Vale per le cariche e l\'attrito attuali; serve l\'attrito viscoso.';
+  if (!marks.length) $('trialStatus').textContent = '';
+  // legenda unica per prove e mappa: le cariche attrattive A, B, C… (anche prima di ogni prova) e gli equilibri trovati
+  const leg = $('basinLegend'); leg.innerHTML = '';
+  const tot = basin.n.reduce((s, v) => s + (v || 0), 0) + basin.undecided, ranks = attractorRanks() || [];
+  const pct = k => {
+    const n = k >= 0 && basin.data && tot ? basin.n[k] || 0 : 0;
+    return n ? ` · ${n/tot < 0.01 ? 'meno dell\'1' : Math.round(n/tot*100)}% della mappa` : '';
+  };
+  const row = (col, txt) => { const d = document.createElement('div'); d.innerHTML = `<span class="sw" style="background:${col}"></span>${txt}`; leg.appendChild(d); };
+  ranks.forEach((ci, r) => {
+    const c = charges[ci], k = attractors.findIndex(a => a.kind === 'q' && a.idx === ci);
+    row(candColor(r), `<b>${LETTERS[r]}</b> · Q${ci + 1} (${fmtQ(c.q)}), ${placeName(c.x, c.y)} ${at(c.x, c.y)}${pct(k)}`);
+  });
+  attractors.forEach((a, k) => {
+    if (a.kind === 'q' && ranks.includes(a.idx)) return;
+    row(a.col, `<b>${a.letter}</b> · ${a.kind === 'q' ? `Q${a.idx + 1} ${at(a.x, a.y)}` : `equilibrio in ${at(a.x, a.y)}`}${pct(k)}`);
+  });
+  if (basin.data && basin.undecided) row('#464a54', `non si ferma entro 200 s · ${Math.max(1, Math.round(basin.undecided/tot*100))}% della mappa`);
+  renderChallenges();
+}
+
+/* --- punti sfida (scommessa) --- */
+let chalSig = '';
+function renderChallenges(){
+  const res = chal.list ? chal.list.map(([x, y]) => { const m = markAt(x, y); return m && attractors[m.k] ? m.k : -1; }) : [];
+  const sig = JSON.stringify([chal.list, chal.cur, res, attractors.map(a => a.col)]);
+  if (sig === chalSig) return;             // si ricostruisce solo se cambia qualcosa (updateBasinUI gira a ogni fotogramma del calcolo)
+  chalSig = sig;
+  $('chalBox').hidden = !chal.list;
+  const ol = $('chalList'); ol.innerHTML = '';
+  if (!chal.list) return;
+  chal.list.forEach(([x, y], n) => {
+    const li = document.createElement('li'), a = res[n] >= 0 ? attractors[res[n]] : null;
+    li.dataset.n = n; if (n === chal.cur) li.className = 'cur';
+    li.innerHTML = `<span class="pt"><b>${n + 1}</b> · ${at(x, y)}</span>`
+      + `<button class="btn sm" data-a="show">Evidenzia</button><button class="btn sm" data-a="go">Mettila per me</button>`
+      + `<span class="res">${a ? `<span class="sw" style="background:${a.col}"></span>${outcomeText(a)}` : ''}</span>`;
+    ol.appendChild(li);
+  });
+}
+$('chalList').addEventListener('click', e => {
+  const b = e.target.closest('button'), li = e.target.closest('li'); if (!b || !li) return;
+  const n = +li.dataset.n, [x, y] = chal.list[n];
+  chal.cur = n; chal.reached = Math.max(chal.reached, n);
+  if (b.dataset.a === 'show'){
+    setTool('test');
+    if (view.h < L && (Math.abs(x - view.cx) > view.h || Math.abs(y - view.cy) > view.h)) resetView();
+    toast(`Punto ${n + 1}: ${at(x, y)}. Su quale carica andrà a finire?`);
+  } else launchTrial(x, y);
+  renderChallenges(); redraw();
+});
+$('optLaunch').addEventListener('change', e => { state.clickLaunch = e.target.checked; if (state.clickLaunch) setTool('test'); });
+$('marksClear').addEventListener('click', () => { marks = []; updateBasinUI(); redraw(); });
+$('basinGo').addEventListener('click', () => { if (!basin.active) basinStart(); });
+segmented('basinRes', v => { basin.N = parseInt(v, 10); if (basin.data) basinStart(); });
+$('optBasin').addEventListener('change', e => { basin.show = e.target.checked; redraw(); });
+
+/* --- scenari (schede 2 e 3) --- */
+function loadScenario(name){
+  const S = SCENARI[name];
+  charges = []; selected = null;
+  for (const [x, y, q] of S.src) addCharge(x, y, q);
+  sim.q0 = 1; sim.m = 1; $('q0').value = 1; $('mass').value = 1;
+  setDamp(S.damp || 'none', S.gamma, S.vstar);
+  sim.speed = S.speed; setSeg('speedSeg', S.speed);
+  sim.showFL = !!S.fl; $('optFL').checked = sim.showFL;
+  const [vm, nl] = S.scale || [1000, 10];
+  if (state.vmax !== vm || state.nlev !== nl) setScale(vm, nl);
+  if (S.right) setRight(S.right);
+  setTool('test');
+  resetView();
+  state.clickLaunch = !!S.clickLaunch; $('optLaunch').checked = state.clickLaunch;
+  chal.list = S.challenges || null; chal.cur = chal.reached = -1;
+  tests = [];
+  for (const [x, y, vx, vy] of S.tests) addTest(x, y, vx, vy);
+  selTest = tests[0] || null; lastSel = 'test';
+  changed(); resetSim();
+  if (tests.length) startSim(); else if (S.clickLaunch) toast('Clicca sulla mappa: la carica parte da ferma');
+  updateBasinUI();
+}
+$('tpresets2').addEventListener('click', e => { const b = e.target.closest('button'); if (b){ setRight('3d'); loadScenario(b.dataset.t); } });
+document.querySelectorAll('#tab3 .try').forEach(b => b.addEventListener('click', () => loadScenario(b.dataset.s)));
+$('showPhase').addEventListener('click', () => setRight('phase'));
+
+/* --- schede --- */
+document.querySelectorAll('.tabs button').forEach(b => b.addEventListener('click', () => {
+  const n = b.dataset.tab;
+  document.querySelectorAll('.tabs button').forEach(x => { x.classList.toggle('on', x === b); x.setAttribute('aria-selected', x === b); });
+  ['1','2','3'].forEach(k => { $('tab' + k).hidden = k !== n; });
+  document.querySelector('.side').scrollTop = 0;
+}));
+
+/* --- disposizione e schermo intero --- */
+const stageArea = $('stageArea');
+segmented('layoutSeg', v => {
+  stageArea.classList.toggle('only-2d', v === '2d');
+  stageArea.classList.toggle('only-3d', v === '3d');
+});
+const fsElement = () => document.fullscreenElement || document.webkitFullscreenElement;
+const isFs = () => fsElement() === stageArea || stageArea.classList.contains('pseudo-fs');
+function fsChanged(){ $('fsBtn').textContent = isFs() ? '✕ Esci da schermo intero' : '⛶ Schermo intero'; }
+function toggleFs(){
+  if (isFs()){
+    if (stageArea.classList.contains('pseudo-fs')){ stageArea.classList.remove('pseudo-fs'); fsChanged(); }
+    else (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+    return;
+  }
+  const req = stageArea.requestFullscreen || stageArea.webkitRequestFullscreen;
+  const fallback = () => { if (!isFs()){ stageArea.classList.add('pseudo-fs'); fsChanged(); } };
+  try {
+    const r = req ? req.call(stageArea) : null;
+    if (r && r.catch) r.catch(fallback);
+    setTimeout(fallback, 400);
+  } catch (e){ fallback(); }
+}
+$('fsBtn').addEventListener('click', toggleFs);
+document.addEventListener('fullscreenchange', fsChanged);
+document.addEventListener('webkitfullscreenchange', fsChanged);
+
+/* --- tastiera --- */
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && stageArea.classList.contains('pseudo-fs')){ stageArea.classList.remove('pseudo-fs'); fsChanged(); return; }
+  if (e.key === 'Escape' && !e.target.matches('input, textarea')){ if (zsel){ zsel = null; redraw(); } else zoomBack(); return; }
+  if (e.target.matches('input, textarea, button')) return;
+  if (e.key === ' '){ e.preventDefault(); $('simPlay').click(); return; }
+  if (e.key === 'f' || e.key === 'F'){ toggleFs(); return; }
+  if (e.key === 'Delete' || e.key === 'Backspace'){
+    if (lastSel === 'test' && selTest){ e.preventDefault(); deleteTest(selTest); }
+    else if (selected){ e.preventDefault(); deleteSelected(); }
+    return;
+  }
+  if (!selected) return;
+  const d = e.shiftKey ? 1 : 0.1;
+  const mv = { ArrowLeft: [-d, 0], ArrowRight: [d, 0], ArrowUp: [0, d], ArrowDown: [0, -d] }[e.key];
+  if (mv){
+    e.preventDefault();
+    selected.x = clampL(Math.round((selected.x + mv[0])*10)/10);
+    selected.y = clampL(Math.round((selected.y + mv[1])*10)/10);
+    changed();
+  }
+});
+
+/* --- avvio --- */
+function relayout(){ layoutTop(); layout3D(); redraw(); }
+new ResizeObserver(relayout).observe($('topStage'));
+new ResizeObserver(relayout).observe($('threeStage'));
+$('vmax').value = Math.round(50*Math.log10(state.vmax/100)); $('nlev').value = state.nlev;
+syncScale(); setDamp('none'); setRight('3d');
+loadPreset('dipolo');
+updateTestUI(); updateBasinUI(); updateZoomUI();
+relayout();
+})();
+</script>
+</body>
+</html>

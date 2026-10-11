@@ -1,100 +1,74 @@
-# Laboratorio del potenziale elettrostatico – riepilogo per Claude Code
+# Laboratorio del potenziale elettrostatico
 
-Progetto didattico per la quinta liceo scientifico: un simulatore HTML (potenziale, moto di cariche, sistemi dinamici e caos) e una lezione in tre livelli (canovaccio, note per il relatore, testo per lo studente) che lo usa.
+## Apri e usa
 
-## 1. Struttura del progetto e comandi
+- **[Simulatore](dist/potenziale-cariche.html)**: il laboratorio interattivo, si usa direttamente nel browser.
+- **[Lezione](dist/lezione-dal-potenziale-al-caos.html)**: canovaccio, note per il relatore e testo per lo studente.
+
+Sono due file HTML autonomi, senza server né connessione: basta aprirli nel browser (da GitHub Pages, oppure scaricandoli e facendo doppio clic).
+
+Simulatore interattivo del potenziale e del campo elettrico, con una lezione per la quinta liceo scientifico che lo usa per arrivare, passo dopo passo, dai sistemi dinamici al caos.
+
+## Cosa contiene
+
+- **Simulatore** (un solo file HTML, funziona offline): mappa 2D con isoipse e linee di campo, superficie 3D del potenziale, moto di cariche di prova con attrito (viscoso o attivo), spazio delle fasi, mappa dei bacini di attrazione con zoom, scenari pronti (orbite, Rutherford, punto fisso, ciclo limite, biliardo caotico, attrattore strano).
+- **Lezione** in tre livelli, generata da Markdown: canovaccio, note per il relatore e testo per lo studente, con figure e formule. Nove tappe in tre incontri: potenziale, moto delle cariche, sistemi dinamici e caos.
+- **Test** della fisica eseguiti sul motore reale del simulatore.
+
+## Se vuoi modificarlo
+
+Per usare il simulatore e la lezione basta aprire i file in `dist/`. Per cambiare i sorgenti e rigenerarli servono Node.js (simulatore e test) e Python 3 (lezione).
+
+```bash
+make simulatore   # src/ -> dist/potenziale-cariche.html
+make lezione      # lezione/*.md + figure/ -> dist/lezione-dal-potenziale-al-caos.html
+make test         # test della fisica (node --test)
+make tutto        # test + simulatore + lezione
+```
+
+Per la lezione:
+
+```bash
+python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
+```
+
+Il simulatore compilato si apre direttamente nel browser, senza server né connessione.
+
+## Struttura
 
 ```
-src/                 sorgenti del simulatore (moduli JS concatenati, CSS e HTML separati)
-lezione/             canovaccio.md, relatore.md, studente.md (FONTE UNICA), template.html, build.py
-figure/              le 15 figure della lezione (PNG)
-strumenti/           build-simulatore.js, motore.js (motore fisico in Node), bz.js, sep2.js, shots.py
-test/                test della fisica (node --test)
-dist/                file compilati, non versionati: un solo HTML ciascuno, funzionano offline
+src/        sorgenti del simulatore (moduli JS concatenati, CSS, HTML)
+lezione/    canovaccio.md, relatore.md, studente.md, template e build.py
+figure/     figure della lezione
+strumenti/  build, motore fisico per Node, script di analisi
+test/       test della fisica
+dist/       file compilati (simulatore e lezione), versionati per la pubblicazione
 ```
 
-| Comando | Effetto |
-| --- | --- |
-| `make simulatore` | `src/` → `dist/potenziale-cariche.html` (Node, nessuna dipendenza) |
-| `make lezione` | `lezione/*.md` + `figure/` → `dist/lezione-dal-potenziale-al-caos.html` (Python) |
-| `make test` | test fisici sul motore reale del simulatore (`node --test`, nessuna dipendenza) |
-| `make tutto` | test, poi i due file |
+Unità: cm, nC, V, V/m, µJ, s. Dettagli su convenzioni numeriche, scenari verificati e cose da fare sono in [CLAUDE.md](CLAUDE.md).
 
-Setup Python (solo per la lezione e per `shots.py`): `python3 -m venv .venv && .venv/bin/pip install -r requirements.txt`; per `shots.py` anche `.venv/bin/playwright install chromium`.
+## Strumenti informatici del simulatore
 
-**Sorgenti del simulatore.** I moduli `src/NN-nome.js` condividono lo stesso scope (sono concatenati nell'ordine del numero e avvolti in una funzione, come nel file originale): niente `import`, quindi nessun bundler. Gli `01…05` e `09` non toccano il DOM; `strumenti/motore.js` li carica in Node con poche funzioni dell'interfaccia sostituite da no-op, così test, `bz.js` e `sep2.js` usano lo stesso codice del simulatore. Le funzioni di disegno e interfaccia stanno in `06`, `07`, `08`, `10`. Nuovo modulo = nuovo file numerato.
+Il simulatore è volutamente senza dipendenze: HTML, CSS e JavaScript puro, nessun framework, nessuna libreria esterna, nessuna richiesta di rete.
 
-**Lezione.** I tre `.md` sono la fonte unica; il documento su claude.ai è solo una copia e non va più riesportato. Immagini: `![didascalia](../figure/nome.png)`; formule: blocchi ```latex; il diagramma del percorso nel canovaccio è generato da `build.py` al posto del segnaposto `@@PERCORSO@@`.
+- **Disegno**: elemento `<canvas>` del browser, con proiezione 3D scritta a mano (algoritmo del pittore) per la superficie del potenziale.
+- **Mappa del potenziale**: isoipse con l'algoritmo *marching squares* su una griglia di 161 × 161 nodi; linee di campo integrate numericamente.
+- **Dinamica**: integratore Runge–Kutta 4 a passo variabile, che rallenta vicino alle cariche; attrito viscoso o attivo (Rayleigh / van der Pol).
+- **Bacini di attrazione**: calcolo progressivo a blocchi di pochi millisecondi per fotogramma, per non bloccare l'interfaccia; zoom sulla mappa per esplorare i confini frattali.
+- **Interfaccia**: Fullscreen API per lo schermo intero, con ripiego in CSS quando un iframe lo blocca.
+- **Struttura del codice**: moduli `src/NN-nome.js` concatenati da uno script Node (`strumenti/build-simulatore.js`) in un unico HTML autonomo, senza bundler.
+- **Test**: `node --test` sul motore fisico reale, caricato in Node al posto dell'interfaccia (conservazione dell'energia, periodi orbitali, esiti degli scenari).
+- **Lezione e figure**: Python con `markdown` per il testo, `matplotlib` per le formule (convertite in SVG), `Pillow` per le immagini, `playwright` per catturare le schermate del simulatore.
 
-Versioni online (private finché non le condividi):
+## Come è stato usato Claude
 
-- Simulatore pubblicato: https://claude.ai/artifact/JBUKU3S2H6ZyMqB8o5mJRk
-- Documento della lezione (copia): https://claude.ai/code/artifact/b47bbfd4-6448-4ee5-8eb6-af24a4abcfdd
+Il progetto è stato sviluppato in conversazione con [Claude Code](https://claude.com/claude-code), con il docente che guida le scelte didattiche e fisiche e Claude che scrive e verifica il codice e i testi.
 
-Strumenti offline: `node strumenti/bz.js x0 x1 y0 y1 N out.json` (mappa dei bacini su una regione, scenario «bacini»); `node strumenti/sep2.js [out.json]` (separazione tra traiettorie vicine, per `f8_separazione.png`).
+- **Sviluppo**: Claude ha scritto e rifattorizzato il simulatore (dal file unico ai moduli in `src/`), il Makefile incrementale e gli script di compilazione.
+- **Verifica numerica**: gli scenari non sono stati scelti a occhio. Condizioni iniziali, valori di attrito e numeri citati nella lezione (periodi, pericentri, esiti dei bacini) sono stati controllati eseguendo il motore fisico in Node e fissati nei test.
+- **Risultati negativi**: le prove fallite sono state registrate, per esempio il problema dei due centri fissi (integrabile, quindi non caotico) e il ciclo limite con una sola carica attrattiva (instabile).
+- **Testi**: canovaccio, note per il relatore e testo narrativo per lo studente sono stati scritti e rivisti con Claude partendo dagli obiettivi didattici.
+- **Figure**: le schermate sono state generate con Playwright pilotando il simulatore reale.
+- **Memoria del progetto**: [CLAUDE.md](CLAUDE.md) raccoglie convenzioni, scenari verificati e cose da fare, così ogni sessione riparte dallo stato aggiornato.
 
-## 2. Convenzioni fisiche e numeriche
-
-- Unità: posizioni in **cm**, cariche in **nC**, potenziale in **V**, campo in **V/m**, energia in **µJ**, tempo in **s**.
-- Dominio visualizzato: x, y ∈ [−10, 10] cm.
-- Costanti nel codice: `K = 8.9875517923e9`; `KV = K·1e-9/1e-2 ≈ 898,76` (V per nC/cm); `KE = K·1e-9/1e-4` (V/m per nC/cm²); `ACC = K·1e-9 ≈ 8,99` (accelerazione in cm/s² = ACC·q₀·Σ q/r² / m, con q in nC, r in cm, m in g).
-- Carica di prova di default: q₀ = 1 nC, m = 1 g.
-- Energie: K = 0,05·m·v² µJ (m in g, v in cm/s); U = q₀·V·10⁻³ µJ.
-- Ammorbidimento: distanza minima `RMIN = 0.15` cm nel calcolo di V ed E; urto quando la carica di prova arriva a `HIT_R = 0.3` cm da una sorgente.
-- Integratore: Runge–Kutta 4 a passo variabile (≤ 0,01 s; più piccolo vicino alle cariche: h ≤ 0,02·d/v e h ≤ 0,1·√(d/a)).
-- Attrito (scheda 3): viscoso F = −mγv; attivo (Rayleigh / van der Pol) F = mγ(1 − v²/v\*²)v.
-- Colori e superficie 3D troncati a ±V_max (default 1000 V, 10 isoipse per segno, ΔV = 100 V). Gli scenari della scheda 3 usano V_max = 8000 V e 25 isoipse.
-- Griglie: 161 × 161 nodi per la mappa (marching squares), 81 × 81 per la superficie 3D.
-
-## 3. Struttura del simulatore (`potenziale-cariche.html`)
-
-- **Layout**: grafici sempre visibili a sinistra (mappa 2D | superficie 3D o spazio delle fasi), barra comandi sotto, tre schede a destra. Schermo intero con Fullscreen API, ripiego CSS (`.pseudo-fs`) se l'iframe lo blocca. Modalità «Solo 2D / Solo 3D».
-- **Fisica**: `potential`, `efieldRaw`, `fillGrid`, `buildContours` (marching squares), `computeFieldLines`.
-- **Dinamica**: `accel` (con attrito), `rk4`, `advance`, `stepSim`, `fieldLineFrom`; stato in `sim` e array `tests` (cariche di prova con traccia `trail`, `trailV`, `trailVX`).
-- **Bacini**: `basinStart`, `basinClassify`, `basinWork` (calcolo progressivo a blocchi di 14–30 ms per frame, sulla finestra `basin.win`), legenda in `updateBasinUI`. Registro `attractors` comune a mappa e prove a mano (colore e lettera A, B, C… fissati dall'ordine delle cariche di segno opposto a q₀); `marks` = punti di partenza delle prove a mano (da ferma, attrito viscoso), registrati da `trialEnd` quando `advance` termina; tutto si azzera in `basinClear` quando cambia la fisica.
-- **Prove e scommessa** (scheda 3): `launchTrial` (un clic = una carica da ferma, opzione `state.clickLaunch`), punti sfida `chal` dallo scenario (`challenges`), elenco in `renderChallenges`.
-- **Zoom 2D**: finestra `view = {cx, cy, h}` (`VIEW0` = tutta la mappa, semilato minimo `HMIN = 0,05` cm); `toSX/toSY/toX/toY` e `fillGrid(gridT, NT, view)` la seguono; `setView`, `zoomBy`, pila `viewStack` per «Indietro»; strumento `zoom` (riquadro trascinato o clic ×2), rotella con Ctrl/⌘/Maiusc.
-- **Disegno**: `drawTop` (mappa), `draw3D` (painter's algorithm), `drawPhase` (proiezione x–vₓ); ciclo `frame` con flag `physicsDirty`, `needTop`, `need3D`.
-- **Scenari**: oggetto `SCENARI` (schede 2 e 3) e `PRESETS` (scheda 1).
-
-## 4. Scenari e condizioni iniziali (verificati numericamente)
-
-Notazione: carica di prova `[x0, y0, vx0, vy0]` in cm e cm/s; q₀ = 1 nC, m = 1 g salvo indicazione. `BOWL` = anello di 16 cariche da +3 nC su raggio 8,5 cm.
-
-| Scenario | Sorgenti | Attrito | Partenze | Esito verificato |
-| --- | --- | --- | --- | --- |
-| Orbita circolare | −2 nC in (0,0) | no | (5, 0, 0, 1,896) | v = 1,90 cm/s, T ≈ 16,6 s, energia costante a 3 cifre |
-| Orbite ellittiche | −2 nC in (0,0) | no | (7, 0, 0, f·1,602), f = 0,5 / 0,7 / 0,9 | pericentri 1,0 / 2,3 / 4,8 cm |
-| Rosetta | −1,5 nC in (±1,5; 0) | no | (0, 6, 0,8·v_c, 0) | orbita limitata che precede |
-| Rutherford | +4 nC in (0,0) | no | 9 cariche da (−9,5; y), y = −4…4, v = (7, 0) | distanza minima frontale 1,27 cm (1,47 cm è il valore se la carica partisse da lontano: il testo della lezione usa quello) |
-| Partenza da ferma | dipolo ±2 nC in (∓3; 0) | no | (−2, 2, 0, 0) | la traiettoria si stacca dalla linea di campo |
-| Deflessione | due file di 7 cariche ±1 nC a x = ∓3 | no | (−1,5; −9,5) con v_y = 14, 17, 21, 28 | deviazioni decrescenti con v |
-| Punto fisso | BOWL | viscoso γ = 0,4 | (5,2,1,1), (−6,−3,0,0), (0,6,5,2,0) | tutte al centro |
-| Bacini | BOWL + 3 × (−1 nC) su raggio 3 | viscoso γ = 0,2 | nessuna all'avvio; 9 punti sfida da ferma | punti sfida: (0; 5,5)→A, (−5; −2,5)→B, (5; −2,5)→C, (−1,5; −6)→A, (−4,5; 3,5)→C, (4,5; 3,5)→B, (0; 0) resta ferma, (0,5; 0)→C, (−0,5; 0)→B (A = Q17 in alto, B = Q18, C = Q19); 4–6 robusti a ±0,3 cm. Mappa 100 × 100 in ≈ 10 s; tre bacini con confini frattali |
-| Ciclo limite | BOWL | attivo γ = 0,6, v\* = 2 | (0,5;0;0;0,3), (6,5;0;0;1), (−6;0;0;−1,5) | tutte su r = 3,11 cm, senso antiorario |
-| Biliardo (caos senza attrito) | BOWL + 3 × (+1,5 nC) su raggio 2,2 | no | (0,3; −5,5; 3,5; 0,4), (0,3; −5,48; …), (0,3; −5,5; 3,0; 0,4) | le prime due divergono (λ ≈ 0,6–0,8 s⁻¹ nella fase rapida, dopo ≈ 40 s), la terza resta regolare |
-| Attrattore strano | BOWL + 3 × (+1,5 nC) su raggio 3 | attivo γ = 0,5, v\* = 2,5 | (0,3; −5,5; 2,5; 0,4), (0,3; −5,48; …), (5, 4, 0, −1) | 5 partenze diverse restano confinate e caotiche; il trifoglio si riconosce dopo ≈ 200 s, si completa verso 500 s. La partenza (0; 6,5; −3; 0) indugia ≈ 250 s su un giro quasi regolare prima di entrare |
-| Attrattore compatto | BOWL + 3 × (+1,5 nC) su raggio 4 | attivo γ = 0,6, v\* = 1,5 | (0,3; −6,5; 0; 0), (6; 3; 0; −1,5), (−6,5; 2,5; 0; 0), (−1; 6,5; 3; 0) | dopo 20 s tutte entro 4,8 cm dal centro, figura a tre lobi in ≈ 100 s; 10⁻⁶ cm → oltre 0,1 cm in 75 s. Con attrito «Nessuno» tutte tornano oltre 6 cm |
-| Quattro attrattori | BOWL + 4 × (−1 nC) in (±2,12; ±2,12) | viscoso γ = 0,2 | nessuna | quattro bacini da 25%, nessuna partenza indecisa |
-| Tre cariche diverse | BOWL + −2 nC (0; 3), −1 nC (−2,6; −1,5), −0,5 nC (2,6; −1,5) | viscoso γ = 0,2 | nessuna | bacini ≈ 53% / 30% / 17% (80 × 80), nessuna indecisa |
-
-Risultati negativi utili (da non rifare):
-
-- Il problema dei **due centri fissi** (Eulero) è integrabile: niente caos (separazione lineare, 10⁻⁶ → 5·10⁻⁵ cm in 150 s). Il vecchio preset «Due centri: moto caotico» è stato rimosso.
-- Attrito attivo con **una sola carica attrattiva**: il cerchio a velocità v\* è instabile (la carica cade o sfugge), perché in 1/r² la velocità circolare decresce con r. Per questo il ciclo limite usa la «ciotola» BOWL, dove la velocità circolare cresce con r.
-- Anello da 12 cariche +1,5 nC: le cariche di prova sfuggono tra i varchi; servono 16 cariche da +3 nC (barriera ≈ 1,9 µJ sopra il centro).
-
-## 5. Lezione
-
-- Struttura: introduzione, 9 tappe in tre incontri (A: 1–3 potenziale, B: 4–5 moto, C: 6–9 sistemi dinamici e caos), chiusura; 13 domande di verifica con soluzioni.
-- Le formule (blocchi ```latex) sono convertite in SVG con il mathtext di matplotlib; i comandi non supportati vengono tradotti (`\text` → `\mathrm`, `\frac` → `\dfrac`).
-
-## 6. Cose da fare
-
-Fatto: struttura a cartelle e git; simulatore modulare con compilazione a file unico; test della fisica sul motore reale (`test/fisica.test.js`: scenari del §4 tranne «rosetta», «partenza da ferma» e «deflessione», ancora senza test); lezione compilabile da `.md` locali.
-
-1. **Figure rigenerate automaticamente.** Nuova figura da generare e inserire nel testo dello studente (tappa 9): `f9_prove` (`python strumenti/shots.py f9_prove`, serve Playwright).  `shots.py` produce catture con nomi diversi da quelli delle figure della lezione (`f5_ellittiche`/`f5_rutherford` invece di `f5_orbite_rutherford`, `f9_bacini` invece di `f9_bacini_2d`) e non è mai stato eseguito dopo il riordino; i grafici `f6_schema_comportamenti`, `f8_separazione`, `f9_zoom` e i composti `f5_*`, `f9_bacini_2d` non hanno più lo script che li genera (restano `sep2.js` e `bz.js` per i dati). Obiettivo: un solo comando che rigenera tutte le figure.
-2. **Numeri nei testi.** Alcune cifre sono scritte a mano nei `.md`: far leggere i valori dai test. In particolare il testo del relatore (tappa 5) dà 1,47 cm per Rutherford; è giusto solo «da lontano» e va precisato che nel laboratorio la partenza a 9,5 cm dà 1,27 cm.
-3. **Collegamenti.** I `.md` puntano al simulatore su claude.ai; per una lezione tutta offline potrebbero puntare a `potenziale-cariche.html` nella stessa cartella.
-4. Possibili migliorie: sezione di Poincaré per l'attrattore strano (renderebbe evidente la differenza con il biliardo senza attendere minuti); scelta della coppia di variabili nello spazio delle fasi (x–vₓ o y–v_y); tema scuro.
-5. Se si vuole aggiornare la versione online del simulatore: `make simulatore` e ripubblicare `dist/potenziale-cariche.html` su claude.ai (artifact JBUKU3S2H6ZyMqB8o5mJRk).
+Il contenuto fisico e didattico va comunque controllato da una persona prima dell'uso in classe.
