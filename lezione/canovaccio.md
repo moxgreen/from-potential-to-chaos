@@ -120,7 +120,7 @@ Incontro C, circa 30 minuti. Un sistema perfettamente deterministico può essere
 - **8.3 Ordine e caos insieme.** Nello stesso sistema una partenza un po' più lenta resta su un moto regolare.
 - **8.4 Senza attrito niente attrattori.** L'energia si conserva e i volumi nello spazio delle fasi non si contraggono (teorema di Liouville).
 - **8.5 Attrattore strano.** Attrito attivo + tre ostacoli: da ogni partenza la carica finisce nella stessa regione aggrovigliata, ma partenze vicine si separano e il moto non si ripete. È l'analogo dell'attrattore di Lorenz (1963).
-- **Laboratorio:** scheda 3, «Prova: il biliardo elettrico» a 4×: seguire P1 e P2 che si separano, P3 che resta ordinata. Poi «Prova: l'attrattore strano» a 8×, lasciato correre due minuti a schermo intero sullo spazio delle fasi.
+- **Laboratorio:** scheda 3, «Prova: il biliardo elettrico» a 4×: seguire P1 e P2 che si separano, P3 che resta ordinata. Poi «Prova: l'attrattore strano» a 16×, lasciato correre almeno un minuto a schermo intero sullo spazio delle fasi (la figura si riconosce solo dopo circa 200 s simulati), e «Prova: un attrattore compatto», dove quattro partenze lontane disegnano in circa 100 s la stessa figura; ripetuto con attrito «Nessuno» per il confronto con il biliardo.
 - **Domanda guida:** se misuro la posizione iniziale dieci volte meglio, di quanto si allunga il tempo in cui posso prevedere il moto?
 
 ## 9 · Bacini di attrazione frattali
@@ -133,7 +133,7 @@ Incontro C, circa 25 minuti. Anche quando ogni moto finisce in modo semplice, pr
 - **9.4 Due zone.** Vicino alle cariche, bacini grandi e regolari. Lontano, strisce dei tre colori intrecciate a ogni scala.
 - **9.5 Frattale.** Ingrandendo un confine compaiono sempre nuovi dettagli: è un oggetto con dimensione non intera.
 - **9.6 Conseguenza.** Vicino a un confine un errore piccolissimo sul punto di partenza cambia il destino finale, anche se il moto non è caotico per sempre.
-- **Laboratorio:** scheda 3, «Prova: tre attrattori». Prima cinque minuti di prove libere, poi la «Scommessa»: «Evidenzia» un punto, si vota per alzata di mano su A, B o C, uno studente clicca sull'anello numerato. Solo dopo, «Calcola la mappa» (circa 10 secondi): ogni punto provato cade nella zona del suo colore. Infine «Ingrandisci un riquadro» su un confine lontano dalle cariche e «Calcola la mappa qui»: le strisce si ripetono.
+- **Laboratorio:** scheda 3, «Prova: tre attrattori». Prima cinque minuti di prove libere, poi la «Scommessa»: «Evidenzia» un punto, si vota per alzata di mano su A, B o C, uno studente clicca sull'anello numerato. Solo dopo, «Calcola la mappa» (circa 10 secondi): ogni punto provato cade nella zona del suo colore. Infine «Ingrandisci un riquadro» su un confine lontano dalle cariche e «Calcola la mappa qui»: le strisce si ripetono. Per giocare ancora: «Quattro attrattori» e «Tre cariche diverse», con mappa e zoom.
 - **Collegamenti:** il pendolo magnetico, i bacini del metodo di Newton per z³ = 1, l'insieme di Mandelbrot.
 - **Domanda guida:** che cosa hanno in comune un pendolo magnetico e le previsioni del tempo?
 

@@ -73,7 +73,10 @@ Notazione: carica di prova `[x0, y0, vx0, vy0]` in cm e cm/s; q₀ = 1 nC, m = 1
 | Bacini | BOWL + 3 × (−1 nC) su raggio 3 | viscoso γ = 0,2 | nessuna all'avvio; 9 punti sfida da ferma | punti sfida: (0; 5,5)→A, (−5; −2,5)→B, (5; −2,5)→C, (−1,5; −6)→A, (−4,5; 3,5)→C, (4,5; 3,5)→B, (0; 0) resta ferma, (0,5; 0)→C, (−0,5; 0)→B (A = Q17 in alto, B = Q18, C = Q19); 4–6 robusti a ±0,3 cm. Mappa 100 × 100 in ≈ 10 s; tre bacini con confini frattali |
 | Ciclo limite | BOWL | attivo γ = 0,6, v\* = 2 | (0,5;0;0;0,3), (6,5;0;0;1), (−6;0;0;−1,5) | tutte su r = 3,11 cm, senso antiorario |
 | Biliardo (caos senza attrito) | BOWL + 3 × (+1,5 nC) su raggio 2,2 | no | (0,3; −5,5; 3,5; 0,4), (0,3; −5,48; …), (0,3; −5,5; 3,0; 0,4) | le prime due divergono (λ ≈ 0,6–0,8 s⁻¹ nella fase rapida, dopo ≈ 40 s), la terza resta regolare |
-| Attrattore strano | BOWL + 3 × (+1,5 nC) su raggio 3 | attivo γ = 0,5, v\* = 2,5 | (0,3; −5,5; 2,5; 0,4), (0,3; −5,48; …), (5, 4, 0, −1) | 5 partenze diverse restano confinate e caotiche |
+| Attrattore strano | BOWL + 3 × (+1,5 nC) su raggio 3 | attivo γ = 0,5, v\* = 2,5 | (0,3; −5,5; 2,5; 0,4), (0,3; −5,48; …), (5, 4, 0, −1) | 5 partenze diverse restano confinate e caotiche; il trifoglio si riconosce dopo ≈ 200 s, si completa verso 500 s. La partenza (0; 6,5; −3; 0) indugia ≈ 250 s su un giro quasi regolare prima di entrare |
+| Attrattore compatto | BOWL + 3 × (+1,5 nC) su raggio 4 | attivo γ = 0,6, v\* = 1,5 | (0,3; −6,5; 0; 0), (6; 3; 0; −1,5), (−6,5; 2,5; 0; 0), (−1; 6,5; 3; 0) | dopo 20 s tutte entro 4,8 cm dal centro, figura a tre lobi in ≈ 100 s; 10⁻⁶ cm → oltre 0,1 cm in 75 s. Con attrito «Nessuno» tutte tornano oltre 6 cm |
+| Quattro attrattori | BOWL + 4 × (−1 nC) in (±2,12; ±2,12) | viscoso γ = 0,2 | nessuna | quattro bacini da 25%, nessuna partenza indecisa |
+| Tre cariche diverse | BOWL + −2 nC (0; 3), −1 nC (−2,6; −1,5), −0,5 nC (2,6; −1,5) | viscoso γ = 0,2 | nessuna | bacini ≈ 53% / 30% / 17% (80 × 80), nessuna indecisa |
 
 Risultati negativi utili (da non rifare):
 
@@ -93,5 +96,5 @@ Fatto: struttura a cartelle e git; simulatore modulare con compilazione a file u
 1. **Figure rigenerate automaticamente.** Nuova figura da generare e inserire nel testo dello studente (tappa 9): `f9_prove` (`python strumenti/shots.py f9_prove`, serve Playwright).  `shots.py` produce catture con nomi diversi da quelli delle figure della lezione (`f5_ellittiche`/`f5_rutherford` invece di `f5_orbite_rutherford`, `f9_bacini` invece di `f9_bacini_2d`) e non è mai stato eseguito dopo il riordino; i grafici `f6_schema_comportamenti`, `f8_separazione`, `f9_zoom` e i composti `f5_*`, `f9_bacini_2d` non hanno più lo script che li genera (restano `sep2.js` e `bz.js` per i dati). Obiettivo: un solo comando che rigenera tutte le figure.
 2. **Numeri nei testi.** Alcune cifre sono scritte a mano nei `.md`: far leggere i valori dai test. In particolare il testo del relatore (tappa 5) dà 1,47 cm per Rutherford; è giusto solo «da lontano» e va precisato che nel laboratorio la partenza a 9,5 cm dà 1,27 cm.
 3. **Collegamenti.** I `.md` puntano al simulatore su claude.ai; per una lezione tutta offline potrebbero puntare a `potenziale-cariche.html` nella stessa cartella.
-4. Possibili migliorie: sezione di Poincaré per l'attrattore strano; scelta della coppia di variabili nello spazio delle fasi (x–vₓ o y–v_y); tema scuro.
+4. Possibili migliorie: sezione di Poincaré per l'attrattore strano (renderebbe evidente la differenza con il biliardo senza attendere minuti); scelta della coppia di variabili nello spazio delle fasi (x–vₓ o y–v_y); tema scuro.
 5. Se si vuole aggiornare la versione online del simulatore: `make simulatore` e ripubblicare `dist/potenziale-cariche.html` su claude.ai (artifact JBUKU3S2H6ZyMqB8o5mJRk).

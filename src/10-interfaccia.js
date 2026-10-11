@@ -396,7 +396,7 @@ function updateBasinUI(){
   const row = (col, txt) => { const d = document.createElement('div'); d.innerHTML = `<span class="sw" style="background:${col}"></span>${txt}`; leg.appendChild(d); };
   ranks.forEach((ci, r) => {
     const c = charges[ci], k = attractors.findIndex(a => a.kind === 'q' && a.idx === ci);
-    row(candColor(r), `<b>${LETTERS[r]}</b> · Q${ci + 1}, ${placeName(c.x, c.y)} ${at(c.x, c.y)}${pct(k)}`);
+    row(candColor(r), `<b>${LETTERS[r]}</b> · Q${ci + 1} (${fmtQ(c.q)}), ${placeName(c.x, c.y)} ${at(c.x, c.y)}${pct(k)}`);
   });
   attractors.forEach((a, k) => {
     if (a.kind === 'q' && ranks.includes(a.idx)) return;

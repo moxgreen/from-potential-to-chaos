@@ -97,6 +97,20 @@ test('attrattore strano: sensibilità alle condizioni iniziali e confinamento', 
   assert.ok(raggi.rmax < 10, `r max = ${raggi.rmax}`);
 });
 
+test('attrattore compatto: partenze lontane raccolte nella stessa regione, moto caotico', () => {
+  const s = separazione('attrattore2', 0, [25, 75]);
+  assert.ok(s[25] < 0.01 && s[75] > 0.1, `separazione a 25 s: ${s[25]}, a 75 s: ${s[75]}`);
+  // Con il motore tutte restano entro 4,8 cm dopo i primi 20 s; senza motore (biliardo) ognuna torna oltre 6 cm.
+  const r = mot => nuovo()(`
+    caricaScenario('attrattore2'); sim.damp = '${mot}'; const rmax = tests.map(() => 0);
+    integra(300, 0.5, t => tests.forEach((p, i) => { if (t > 20) rmax[i] = Math.max(rmax[i], Math.hypot(p.x, p.y)); }));
+    ({ rmax, vive: tests.every(p => p.status === 'moving') })`);
+  const conMotore = r('active'), senza = r('none');
+  assert.ok(conMotore.vive && senza.vive, 'nessuna esce dalla mappa né urta una carica');
+  for (const v of conMotore.rmax) assert.ok(v < 4.8, `con il motore r max = ${v}`);
+  for (const v of senza.rmax) assert.ok(v > 6, `senza motore r max = ${v}`);
+});
+
 test('bacini: tre bacini, uno per ciascuna carica negativa interna', () => {
   const r = nuovo()(`
     caricaScenario('bacini'); const N = 20, cell = 2*L/N, n = {};
@@ -176,4 +190,26 @@ test('zoom: potenziale e mappa dei bacini calcolati sulla finestra', () => {
   assert.ok(r.ok, 'celle della finestra = classificazione diretta');
   assert.ok(r.fatto);
   assert.ok(r.tutteC, 'attorno al punto sfida 5 tutto il riquadro di 1 cm finisce su C');
+});
+
+// Altre configurazioni dei bacini (pulsanti «Quattro attrattori» e «Tre cariche diverse»).
+const bacini = nome => nuovo()(`
+  caricaScenario('${nome}'); const N = 20, cell = 2*L/N, n = {};
+  for (let j = 0; j < N; j++) for (let i = 0; i < N; i++){
+    const k = basinClassify(-L + (i + .5)*cell, L - (j + .5)*cell); n[k < 0 ? k : attractors[k].letter] = (n[k < 0 ? k : attractors[k].letter] || 0) + 1; }
+  ({ n, tipi: attractors.map(a => a.kind).join('') })`);
+
+test('bacini: quattro attrattori, bacini uguali per simmetria', () => {
+  const r = bacini('bacini4');
+  assert.equal(r.tipi, 'qqqq');
+  assert.ok(!r.n[-2], 'nessuna partenza indecisa');
+  const k = ['A', 'B', 'C', 'D'].map(l => r.n[l]);
+  for (const v of k) assert.ok(v > 30 && Math.abs(v - k[0]) <= 0.15*k[0], `celle per bacino: ${k}`);
+});
+
+test('bacini: tre cariche diverse, il bacino più grande è della carica più forte', () => {
+  const r = bacini('baciniDiverse');
+  assert.equal(r.tipi, 'qqq');
+  assert.ok(!r.n[-2], 'nessuna partenza indecisa');
+  assert.ok(r.n.A > r.n.B && r.n.B > r.n.C && r.n.C > 10, `A −2 nC: ${r.n.A}, B −1 nC: ${r.n.B}, C −0,5 nC: ${r.n.C}`);
 });

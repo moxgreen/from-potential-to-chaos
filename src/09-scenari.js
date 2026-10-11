@@ -27,5 +27,11 @@ const SCENARI = {
                   challenges: [[0, 5.5], [-5, -2.5], [5, -2.5], [-1.5, -6], [-4.5, 3.5], [4.5, 3.5], [0, 0], [0.5, 0], [-0.5, 0]] },
   ciclo:        { src: BOWL, damp: 'active', gamma: 0.6, vstar: 2.0, speed: 4, scale: [8000, 25], right: 'phase', tests: [[0.5, 0, 0, 0.3], [6.5, 0, 0, 1], [-6, 0, 0, -1.5]] },
   caos:         { src: [...BOWL, ...tri(2.2, 1.5)], speed: 4, scale: [8000, 25], right: 'phase', tests: [[0.3, -5.5, 3.5, 0.4], [0.3, -5.48, 3.5, 0.4], [0.3, -5.5, 3.0, 0.4]] },
-  attrattore:   { src: [...BOWL, ...tri(3, 1.5)], damp: 'active', gamma: 0.5, vstar: 2.5, speed: 8, scale: [8000, 25], right: 'phase', tests: [[0.3, -5.5, 2.5, 0.4], [0.3, -5.48, 2.5, 0.4], [5, 4, 0, -1]] }
+  attrattore:   { src: [...BOWL, ...tri(3, 1.5)], damp: 'active', gamma: 0.5, vstar: 2.5, speed: 8, scale: [8000, 25], right: 'phase', tests: [[0.3, -5.5, 2.5, 0.4], [0.3, -5.48, 2.5, 0.4], [5, 4, 0, -1]] },
+  // Ostacoli più lontani e motore più lento: attrattore compatto a tre lobi, raggiunto in circa 100 s da partenze ai lati opposti.
+  // Con l'attrito «Nessuno» le stesse partenze vagano invece su gran parte dell'anello: confronto diretto con il biliardo.
+  attrattore2:  { src: [...BOWL, ...tri(4, 1.5)], damp: 'active', gamma: 0.6, vstar: 1.5, speed: 8, scale: [8000, 25], right: 'phase', tests: [[0.3, -6.5, 0, 0], [6, 3, 0, -1.5], [-6.5, 2.5, 0, 0], [-1, 6.5, 3, 0]] },
+  // Altre configurazioni per i bacini: quattro cariche uguali sul raggio di 3 cm; tre cariche diverse (−2, −1, −0,5 nC), mappa senza simmetria.
+  bacini4:      { src: [...BOWL, [2.12, 2.12, -1], [-2.12, 2.12, -1], [-2.12, -2.12, -1], [2.12, -2.12, -1]], damp: 'visc', gamma: 0.2, speed: 2, scale: [8000, 25], clickLaunch: true, tests: [] },
+  baciniDiverse:{ src: [...BOWL, [0, 3, -2], [-2.6, -1.5, -1], [2.6, -1.5, -0.5]], damp: 'visc', gamma: 0.2, speed: 2, scale: [8000, 25], clickLaunch: true, tests: [] }
 };

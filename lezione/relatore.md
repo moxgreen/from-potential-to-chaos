@@ -69,6 +69,14 @@ La tappa smonta l'equivoco «la carica segue la linea di campo» con un argoment
 
 **Perché la traiettoria non è la linea di campo.** Per percorrere una curva di raggio R a velocità v serve un'accelerazione normale v²/R. Lungo una linea di campo la forza q₀E è tangente alla linea, quindi non ha componente normale: la carica non può restarci sopra, salvo velocità nulla o linea retta. Partendo da ferma imbocca la linea, poi l'inerzia la porta verso l'esterno della curvatura. Con una sola carica sorgente le linee sono rette e traiettoria e linea coincidono: è un buon controesempio da proporre.
 
+**Quando la carica segue davvero la linea di campo: l'attrito forte.** L'equivoco ha una radice ragionevole: nell'esperienza quotidiana l'attrito domina e i corpi si muovono dove li spinge la forza (è la fisica di Aristotele). Con attrito viscoso l'equazione è m**a** = q₀**E** − mγ**v**. La velocità si adegua alla forza in un tempo 1/γ; se in quel tempo la carica percorre un tratto piccolo rispetto al raggio di curvatura R della linea, l'inerzia non conta e **v** ≈ q₀**E**/(mγ): la velocità è sempre parallela al campo e la traiettoria coincide con la linea di campo, cioè con la discesa lungo il gradiente di V. Con v ≈ a/γ la condizione è a/γ² ≪ R. Nello scenario «Partenza da ferma nel dipolo» la distanza massima tra traiettoria e linea di campo, misurata con il motore del laboratorio, è:
+
+| γ (s⁻¹) | 0 | 0,4 | 1,0 | 1,5 | 5 | 20 |
+|---|---|---|---|---|---|---|
+| distanza massima | 14 cm (non raggiunge la carica) | 4,5 cm | 1,5 cm | 0,8 cm | 0,1 cm | 0,03 cm |
+
+Lo slider arriva a γ = 1,5 s⁻¹, quindi in aula la sovrapposizione è buona ma non perfetta: basta per mostrare la tendenza. Per la dimostrazione: scheda 2 → «Partenza da ferma nel dipolo» (la linea punteggiata è già attiva), poi scheda 3 → attrito «Viscoso» e γ al massimo. Il regime tornerà utile nella tappa 9: più γ è grande, più il destino di una partenza da ferma si legge seguendo la linea di campo dal punto di partenza.
+
 **Unità del laboratorio, per i conti alla lavagna**
 
 - K = ½ m v²: con m = 1 g e v = 1 cm/s vale 0,05 µJ.
@@ -166,6 +174,10 @@ Misurare la posizione iniziale 10 volte meglio allunga la previsione solo di ln(
 
 **L'attrattore strano del laboratorio.** Anello di cariche più tre ostacoli positivi, attrito attivo (γ = 0,5 s⁻¹, v\* = 2,5 cm/s). Nelle verifiche cinque partenze molto diverse sono rimaste confinate nella stessa regione con moto caotico; due partenze distanti 0,02 cm erano a circa 2 cm dopo 40 s. Il laboratorio non calcola né la dimensione frattale né una sezione di Poincaré: l'attrattore si riconosce dalle tre proprietà (attira, è limitato, il moto su di esso è caotico).
 
+**Avvertire che serve tempo.** Nei primi 100–150 s simulati la traccia dell'attrattore strano è indistinguibile da quella del biliardo: il trifoglio si riconosce dopo circa 200 s e si completa verso 500 s, cioè da 25 s a un minuto di attesa a 8× (la metà a 16×, velocità aggiunta per questo). Qualche partenza indugia anche 200–250 s vicino a un giro quasi regolare prima di entrare nella figura: due copie di quella partenza distanti 10⁻⁴ cm sono comunque a 10 cm l'una dall'altra dopo 500 s, quindi non è un secondo attrattore ma una lunga fase di transizione. Conviene lanciarlo a 16× mentre si spiega, e tornarci dopo.
+
+**Un attrattore compatto.** «Prova: un attrattore compatto»: stessi ingredienti con gli ostacoli su raggio 4 cm e motore più lento (γ = 0,6 s⁻¹, v\* = 1,5 cm/s). Quattro partenze ai lati opposti dell'anello entrano in pochi secondi simulati entro 4,6 cm dal centro e in circa 100 s (una dozzina di secondi a 8×) riempiono la stessa figura a tre lobi, ben visibile sulla mappa dall'alto; due partenze distanti 10⁻⁶ cm si separano di centimetri in 50–75 s. Con l'attrito «Nessuno» le stesse partenze diventano un biliardo: ognuna conserva la propria energia e torna oltre 6 cm dal centro (fino a 7,7 cm). È il confronto più diretto tra «attira» e «non attira»: stesse cariche, stessa partenza, cambia solo il bilancio di energia.
+
 **Cautele da dire**
 
 - La forma non è una farfalla: quella di Lorenz (1963) viene da un modello semplificato di convezione; l'«effetto farfalla» è il titolo di una sua conferenza del 1972.
@@ -199,6 +211,8 @@ I punti 4 e 5 non dipendono dalla precisione del clic: spostandoli di 3 mm in qu
 - Lontano i tre colori si alternano in strisce sempre più sottili: è il confine frattale.
 - Riducendo γ i confini diventano più intricati, perché la carica fa più giri prima di fermarsi; aumentandolo si semplificano. È un buon esperimento da far fare agli studenti.
 
+**Altre disposizioni.** Sotto «Prova: tre attrattori» ci sono due varianti, senza punti sfida, per le prove a mano e per lo zoom. «Quattro attrattori»: quattro cariche da −1 nC ai vertici di un quadrato di semidiagonale 3 cm; per simmetria i quattro bacini occupano un quarto della mappa ciascuno, e i confini lontani sono strisce dei quattro colori. «Tre cariche diverse»: −2 nC in alto, −1 nC in basso a sinistra, −0,5 nC in basso a destra; i bacini occupano circa il 53%, 30% e 17% della mappa (calcolo su 80 × 80 partenze), quindi più la carica è forte più il bacino è grande, ma le strisce intrecciate restano e la mappa perde la simmetria. Un buon riquadro da ingrandire in entrambe è di nuovo quello in alto a sinistra, attorno a (−4,5; 5).
+
 **Approfondimenti per il relatore**
 
 - Sensibilità dello stato finale: la frazione di punti «incerti» entro una distanza ε da un confine cresce come ε^α con α < 1 quando il confine è frattale, quindi migliorare la precisione serve meno del previsto.
@@ -217,7 +231,7 @@ La numerazione è quella della sezione «Mettiti alla prova» del testo per lo s
 2. In un punto di incrocio V avrebbe due valori diversi, ma il potenziale in ogni punto ne ha uno solo.
 3. No. Nell'origine V = 0 ma |E| ≈ 40 kV/m: il campo dipende da come V cambia, non dal suo valore.
 4. |E| ≈ 100 V / 0,005 m = 2·10⁴ V/m.
-5. Con una sola carica sì: le linee di campo sono rette e la carica parte lungo la retta senza motivo di deviare. Nel dipolo no: le linee sono curve e l'inerzia porta la carica fuori dalla linea.
+5. Con una sola carica sì: le linee di campo sono rette e la carica parte lungo la retta senza motivo di deviare. Nel dipolo no: le linee sono curve e l'inerzia porta la carica fuori dalla linea. Con un attrito molto forte invece la carica non accumula velocità, si muove sempre nella direzione della forza e segue la linea di campo anche nel dipolo.
 6. Da v = √(k|qQ|/(mr)): la velocità si divide per √2 ≈ 1,41. Il periodo T = 2πr/v si moltiplica per 2√2 ≈ 2,83 (terza legge di Keplero).
 7. ½mv² = k q Q / d ⇒ d = 2kqQ/(mv²) = 2 × 8,99·10⁹ × 10⁻⁹ × 4·10⁻⁹ / (10⁻³ × 0,07²) ≈ 0,0147 m ≈ 1,5 cm.
 8. Le orbite ellittiche sono una famiglia continua: cambiando la velocità iniziale si passa a un'altra orbita e lì si resta. Il ciclo limite è un'orbita isolata che attira quelle vicine: da qualunque partenza vicina si finisce su di essa.

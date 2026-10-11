@@ -1,6 +1,6 @@
 /* ================= carica di prova e dinamica ================= */
 const ACC = K*1e-9;           // a (cm/s²) = ACC · q0(nC) · Σ q/r² (nC/cm²) / m(g)
-const HIT_R = 0.3, MAX_TESTS = 12, MAX_TRAIL = 12000, VS = 0.5;
+const HIT_R = 0.3, MAX_TESTS = 12, MAX_TRAIL = 40000, VS = 0.5;
 const TCOL = ['#142a4c','#8a4b00','#00695c','#5e2b97','#9c1c1c','#37474f','#1b5e20','#6d4c41','#283593','#7b1fa2','#004d40','#bf360c'];
 const FCOL = '#d81b60';
 const sim = { q0: 1, m: 1, speed: 1, running: false, t: 0, lastTs: 0, showVF: true, showFL: false, damp: 'none', gamma: 0.3, vstar: 2.5 };

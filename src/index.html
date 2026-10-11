@@ -54,7 +54,7 @@
         <button class="btn primary" id="simPlay">Avvia</button>
         <button class="btn" id="simReset">Ricomincia</button>
         <div class="seg" id="speedSeg">
-          <button data-v="0.5">½×</button><button data-v="1" class="on">1×</button><button data-v="2">2×</button><button data-v="4">4×</button><button data-v="8">8×</button>
+          <button data-v="0.5">½×</button><button data-v="1" class="on">1×</button><button data-v="2">2×</button><button data-v="4">4×</button><button data-v="8">8×</button><button data-v="16">16×</button>
         </div>
         <span class="muted">t = <b id="simTime">0,0 s</b></span>
         <span class="pill" id="dampBadge" hidden></span>
@@ -271,6 +271,12 @@
         <p>Quando gli attrattori sono più di uno, ogni stato iniziale finisce su uno di essi. Gli stati che portano allo stesso attrattore formano il suo <b>bacino di attrazione</b>.</p>
         <p>Qui tre cariche negative, A, B e C, attirano la carica di prova e l'attrito la fa cadere su una delle tre. Su quale? Prima di calcolare la mappa, prova a indovinarlo.</p>
         <button class="btn try" data-s="bacini">Prova: tre attrattori</button>
+        <p class="muted" style="margin:6px 0 0">Altre configurazioni, per le prove a mano e per la mappa con lo zoom:</p>
+        <div class="row" style="margin-top:4px">
+          <button class="btn try" data-s="bacini4">Quattro attrattori</button>
+          <button class="btn try" data-s="baciniDiverse">Tre cariche diverse</button>
+        </div>
+        <p class="note">«Quattro attrattori»: quattro cariche uguali da −1 nC ai vertici di un quadrato. «Tre cariche diverse»: −2, −1 e −0,5 nC, senza simmetria. Chi ha il bacino più grande? E i confini lontani dalle cariche sono ancora strisce intrecciate?</p>
         <h4>Prove a mano</h4>
         <p class="muted" style="margin:0">Clicca sulla mappa: la carica parte da ferma e, quando arriva su un attrattore, il suo punto di partenza si colora come lui.</p>
         <label class="check"><input type="checkbox" id="optLaunch"> Un clic sulla mappa = una prova da ferma</label>
@@ -323,9 +329,13 @@
       <section class="block concept theory">
         <h3><span class="num">5</span>Attrattore strano</h3>
         <p>Con attrito e motore insieme il moto può essere caotico e allo stesso tempo attratto da un insieme limitato: un <b>attrattore strano</b>, come quello «a farfalla» di Lorenz.</p>
-        <p>Da partenze molto diverse la carica finisce sempre nella stessa regione intricata dello spazio delle fasi, ma due partenze vicine si separano in fretta e il moto non si ripete mai. Lascia correre la simulazione: la forma dell'attrattore emerge dalla traccia.</p>
+        <p>Da partenze molto diverse la carica finisce sempre nella stessa regione intricata dello spazio delle fasi, ma due partenze vicine si separano in fretta e il moto non si ripete mai. La forma dell'attrattore emerge dalla traccia.</p>
+        <p><b>Serve pazienza.</b> All'inizio la traccia sembra quella del biliardo: la figura si riconosce solo dopo alcuni minuti di moto simulato. Tieni d'occhio il tempo t accanto ai pulsanti della velocità: nel primo esempio la forma a trifoglio compare dopo circa 200 s (25 s di attesa a 8×, 12 s a 16×) e si completa verso 500 s. Qualche partenza indugia a lungo su un giro quasi regolare prima di entrare nella figura.</p>
         <button class="btn try" data-s="attrattore">Prova: l'attrattore strano</button>
-        <p class="note">La forma non è una farfalla: quella di Lorenz nasce da un modello di convezione nell'atmosfera, mentre qui l'attrattore riflette la simmetria delle tre cariche. Le proprietà, però, sono le stesse.</p>
+        <p>Nel secondo esempio i tre ostacoli sono più lontani dal centro (4 cm) e il motore è più lento (<i>v</i>* = 1,5 cm/s). Quattro cariche partono da lati opposti dell'anello: entrano quasi subito tutte nella stessa regione e in circa 100 s di moto (una dozzina di secondi a 8×) disegnano insieme una figura compatta a tre lobi.</p>
+        <button class="btn try" data-s="attrattore2">Prova: un attrattore compatto</button>
+        <p class="muted" style="margin:6px 0 0">Il confronto con il biliardo: con le stesse cariche e le stesse partenze scegli l'attrito «Nessuno». Senza motore niente le raccoglie: ogni carica conserva la propria energia e vaga per gran parte dell'anello.</p>
+        <p class="note" style="margin-top:8px">La forma non è una farfalla: quella di Lorenz nasce da un modello di convezione nell'atmosfera, mentre qui l'attrattore riflette la simmetria delle tre cariche. Le proprietà, però, sono le stesse.</p>
       </section>
     </div>
   </aside>

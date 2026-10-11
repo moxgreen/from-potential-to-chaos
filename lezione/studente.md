@@ -146,7 +146,9 @@ K + U = \tfrac12 m v^2 + q_0 V = \text{costante}
 
 Quando una carica positiva scende verso potenziali più bassi perde energia potenziale e guadagna velocità: sulla superficie 3D è la pallina che scende dal pendio.
 
-**La traiettoria non è la linea di campo.** Ecco la risposta alla domanda lasciata aperta. La forza dice come *cambia* la velocità, non dove va la carica. Per percorrere una curva servirebbe una forza diretta verso l'interno della curva (la forza centripeta), ma la forza elettrica è diretta lungo la linea di campo, non verso il suo interno. Partendo da ferma, la carica imbocca la linea di campo; poi l'inerzia la porta fuori.
+**La traiettoria non è la linea di campo.** Ecco la risposta alla domanda lasciata aperta. La forza dice come *cambia* la velocità, non dove va la carica. Per percorrere una curva servirebbe una forza diretta verso l'interno della curva (la forza centripeta), ma la forza elettrica è diretta lungo la linea di campo, non verso il suo interno. Partendo da ferma, la carica imbocca la linea di campo: nel primo istante la velocità è nulla, e la carica si mette in moto proprio nella direzione della forza. Appena però ha una velocità, se la linea curva la carica non riesce a starle dietro: l'inerzia la porta verso l'esterno della curva, e più va veloce più se ne allontana.
+
+**Quando invece la segue.** I casi sono due. Il primo è una linea di campo dritta, come attorno a una carica isolata: non c'è nessuna curva da percorrere e la carica cade lungo la retta. Il secondo è un attrito molto forte, come per una pallina lasciata in un barattolo di miele: la carica non riesce ad accumulare velocità, si muove sempre piano nella direzione in cui la spinge la forza e quindi scende lungo la linea di campo, cioè lungo la massima pendenza del potenziale. È l'esperienza di tutti i giorni, dove l'attrito c'è sempre, a farci pensare che un corpo vada dove lo spinge la forza; senza attrito questo vale solo nel primo istante.
 
 ![Traiettoria e linea di campo nel dipolo](../figure/f4_ferma.png)
 
@@ -155,6 +157,8 @@ Quando una carica positiva scende verso potenziali più bassi perde energia pote
 > **Idea chiave.** La forza determina il cambiamento della velocità, non la direzione del moto: in generale la traiettoria di una carica non coincide con la linea di campo. Ciò che resta costante, senza attrito, è l'energia totale K + U.
 
 > **Prova sul laboratorio.** Scheda 2 → «Partenza da ferma nel dipolo». Durante il moto guarda la tabella dell'energia: K e U cambiano, la loro somma no.
+
+> **Prova sul laboratorio.** Nello stesso scenario la linea punteggiata è la linea di campo che passa per il punto di partenza (si attiva con «Mostra la linea di campo dal punto di partenza»). Ora passa alla scheda 3, scegli l'attrito «Viscoso» e porta γ al massimo: la traiettoria si avvicina molto alla linea punteggiata. Più l'attrito è forte, più le due curve si sovrappongono.
 
 > **Prova sul laboratorio.** Premi «Posiziona una carica di prova», poi clicca sulla mappa e, senza rilasciare, trascina: la freccia che disegni è la velocità iniziale. Prevedi la traiettoria, poi premi Avvia (o la barra spaziatrice).
 
@@ -196,13 +200,15 @@ Cambiamo punto di vista. Invece di domandarci dove andrà *questa* carica, ci ch
 
 > **Definizione.** Lo **stato** di un sistema è l'insieme dei numeri che bastano a determinarne l'evoluzione futura. Un **sistema dinamico** è una regola che, dato lo stato in un istante, dice come cambierà: qui è la seconda legge della dinamica. Se lo stesso stato iniziale porta sempre allo stesso futuro, il sistema è **deterministico**.
 
-**Lo spazio delle fasi.** L'insieme di tutti gli stati possibili è lo **spazio delle fasi**: ogni moto è una curva in questo spazio, e da ogni stato ne passa una sola. Quello della nostra carica ha quattro dimensioni, impossibili da disegnare: il laboratorio ne mostra una «ombra» a due dimensioni, con la posizione x in orizzontale e la velocità vₓ in verticale. Per questo nel grafico le curve possono sembrare incrociarsi: è l'ombra che si sovrappone, non il moto vero.
+**Lo spazio delle fasi.** L'insieme di tutti gli stati possibili è lo **spazio delle fasi**: ogni moto è una curva in questo spazio, e da ogni stato ne passa una sola. Quello della nostra carica ha quattro dimensioni, impossibili da disegnare: il laboratorio ne mostra una «ombra» a due dimensioni, con la posizione x in orizzontale e la velocità vₓ in verticale.
 
-**Un moto periodico è una curva chiusa.** Nell'orbita circolare la carica ripassa sempre per gli stessi stati: nello spazio delle fasi percorre un'ellisse, sempre la stessa.
+**Un moto periodico è una curva chiusa.** Se dopo un certo tempo la carica torna esattamente allo stesso stato, con la stessa posizione e la stessa velocità, da lì in poi ripete lo stesso moto, perché da ogni stato passa una sola curva: la curva si chiude su se stessa e viene percorsa sempre uguale. Nell'orbita circolare succede proprio questo: la carica ripassa sempre per gli stessi stati e nello spazio delle fasi percorre un'ellisse, sempre la stessa.
 
 ![Orbita circolare nello spazio delle fasi](../figure/f6_circolare_fasi.png)
 
 *Figura 6 – L'orbita circolare: a sinistra la traiettoria nel piano, a destra la stessa orbita nello spazio delle fasi (x, vₓ), un'ellisse percorsa sempre uguale.*
+
+**L'ombra può ingannare.** Nel grafico però vediamo solo due dei quattro numeri. Due stati con gli stessi x e vₓ ma con y o v\_y diversi finiscono nello stesso punto dell'ombra. Per questo una curva può sembrare chiusa, o incrociarsi con se stessa o con un'altra, anche quando il moto non è periodico: la carica è tornata agli stessi x e vₓ, ma non allo stesso stato. Il moto è davvero periodico solo se tornano uguali tutti e quattro i numeri; gli incroci che vedi sono sovrapposizioni dell'ombra, non del moto vero.
 
 Nelle prossime sezioni incontreremo quattro comportamenti tipici. La figura seguente li riassume come una mappa del viaggio: ogni riquadro è uno spazio delle fasi.
 
@@ -218,19 +224,25 @@ Tutte le curve di questa sezione sono state tracciate senza attrito: il sistema 
 
 ## 7 · Punto fisso e ciclo limite
 
-Senza attrito un sistema conserva memoria perfetta delle condizioni iniziali: la sua energia resta quella di partenza. Con l'attrito, invece, dimentica, e moti partiti in modi diversi possono finire nello stesso modo. Il comportamento verso cui tendono si chiama attrattore.
+**Memoria e oblio.** Senza attrito il moto si può ripercorrere all'indietro. Se a un certo istante conosci lo stato della carica, cioè posizione e velocità, le stesse equazioni ti dicono non solo dove andrà ma anche da dove è venuta, a ritroso fino al punto di partenza: basta invertire la velocità e la carica ripercorre la sua strada al contrario, come un film proiettato all'indietro. È come se la carica ricordasse tutta la sua storia. E due cariche partite da stati diversi restano sempre distinguibili: per esempio, se all'inizio avevano energie diverse, avranno energie diverse per sempre.
+
+Con l'attrito non è più così. Due cariche partite da punti diversi perdono energia e rallentano, e in certe configurazioni del campo possono finire nello stesso stato: stessa posizione e stessa velocità. (A rigore non lo raggiungono mai esattamente: si avvicinano allo stesso stato sempre di più, finché la differenza diventa così piccola che nessuna misura potrebbe rivelarla. Non sono identiche, ma indistinguibili.) Succede, per esempio, se partono entrambe nella zona intorno a un punto in cui la forza si annulla e che le richiama verso di sé: tutte e due vanno a fermarsi lì. Non è detto che succeda sempre: se ci sono più punti di arrivo possibili, cariche partite in zone diverse possono finire in punti diversi (lo vedremo nella sezione 9). Ma quando finiscono nello stesso stato, guardando lo stato finale non c'è più modo di distinguerle, né di dire quale sia partita da dove: le cariche non si ricordano più da dove sono partite. Anche il film all'indietro non funziona più: se inverti la velocità, l'attrito continua a frenare la carica invece di restituirle l'energia persa. Lo stato, o l'insieme di stati, verso cui tendono si chiama attrattore.
 
 > **Definizione.** Un **attrattore** è l'insieme di stati verso cui tendono, col passare del tempo, le traiettorie che partono da una regione dello spazio delle fasi.
 
-**Attrito viscoso.** Nel laboratorio (scheda 3) puoi aggiungere una forza F = −mγv, opposta alla velocità, come la resistenza dell'aria: l'energia K + U diminuisce sempre.
+**Attrito viscoso.** Nel laboratorio (scheda 3) puoi aggiungere una forza F = −mγv, opposta alla velocità, come la resistenza dell'aria: l'energia K + U diminuisce sempre. Se l'attrito è molto forte la carica non fa in tempo ad accelerare e scende lentamente lungo la linea di campo, come abbiamo visto nella sezione 4.
 
-**Il punto fisso.** Mettiamo la carica di prova positiva dentro un anello di cariche positive: al centro le spinte si bilanciano e la forza è nulla. Con l'attrito, da qualunque punto parta, la carica finisce ferma al centro. Nello spazio delle fasi lo stato «carica ferma al centro» è un punto, e le traiettorie vi arrivano a spirale: è un **punto fisso stabile**.
+**Il punto fisso.** Mettiamo la carica di prova positiva dentro un anello di cariche positive: al centro le spinte si bilanciano e la forza è nulla. Se la carica è ferma proprio lì, nessuna forza la mette in moto e resta ferma per sempre: lo stato «carica ferma al centro» non cambia nel tempo. Nello spazio delle fasi è un punto da cui la curva non si sposta mai, un **punto fisso**.
+
+Non basta però che la forza sia nulla: conta che cosa succede se la carica si trova *vicino* al centro. Nel paesaggio del potenziale le cariche dell'anello sono picchi tutto intorno, e il centro è il fondo di una conca: spostata di poco, la carica viene spinta indietro verso il centro, come una pallina sul fondo di una ciotola. Con l'attrito, da qualunque punto dentro l'anello parta, la carica oscilla intorno al centro sempre meno e finisce ferma lì. Nello spazio delle fasi le traiettorie vi arrivano a spirale: è un **punto fisso stabile**.
+
+> **Definizione.** Un **punto fisso** è uno stato che non cambia nel tempo: qui, la carica ferma in un punto dove la forza è nulla. È **stabile** se, partendo da uno stato vicino, il sistema resta vicino e, con l'attrito, ci ritorna; è **instabile** se basta spostarlo di pochissimo perché se ne allontani. Il centro fra due cariche positive uguali (il punto di sella della sezione 2) è un punto fisso instabile: anche lì la forza è nulla, ma basta uno spostamento minimo lungo la direzione perpendicolare perché la carica scivoli via, come una pallina in equilibrio sulla sella.
 
 ![Il punto fisso](../figure/f7_puntofisso.png)
 
 *Figura 8 – Tre cariche di prova partite da punti diversi dentro l'anello. A destra, nello spazio delle fasi, tre spirali che finiscono nello stesso punto.*
 
-**Il ciclo limite.** Ora sostituiamo l'attrito con un «motore»: una forza che spinge la carica quando è più lenta di una velocità v\* e la frena quando è più veloce. Il sistema riceve energia quando ne ha poca e la cede quando ne ha troppa. Risultato: partendo da dentro o da fuori, la carica finisce sempre sullo stesso giro, un cerchio di circa 3,1 cm di raggio percorso esattamente a velocità v\*. Questa orbita isolata che attira le altre è un **ciclo limite**.
+**Il ciclo limite.** Ora sostituiamo l'attrito con un «motore»: una forza che spinge la carica quando è più lenta di una velocità v\* e la frena quando è più veloce. Sembra un'invenzione, ma è esattamente quello che fa il cruise control di un'automobile: imposti 110 km/h, e se l'auto va più piano il motore accelera, se va più forte rallenta. Il sistema riceve energia quando ne ha poca e la cede quando ne ha troppa. Risultato: partendo da dentro o da fuori, la carica finisce sempre sullo stesso giro, un cerchio di circa 3,1 cm di raggio percorso esattamente a velocità v\*. Questa orbita isolata che attira le altre è un **ciclo limite**.
 
 ![Il ciclo limite](../figure/f7_ciclo.png)
 
@@ -238,11 +250,19 @@ Senza attrito un sistema conserva memoria perfetta delle condizioni iniziali: la
 
 Conviene fermarsi sulla differenza con le orbite della sezione 5: lì ogni velocità iniziale dava un'orbita diversa, qui l'orbita finale è sempre la stessa, qualunque sia la partenza. È la ragione per cui i cicli limite compaiono dove un fenomeno si ripete sempre uguale: il battito del cuore, il ticchettio di un orologio a pendolo, il suono di una corda di violino strofinata dall'archetto.
 
+L'orologio a pendolo è l'esempio più chiaro. Da solo il pendolo si fermerebbe, perché l'attrito con l'aria e nel perno gli toglie un po' di energia a ogni oscillazione. Un meccanismo, lo scappamento, gli dà allora una piccola spinta a ogni passaggio, prendendo energia dalla molla carica o dal peso che scende. Se le oscillazioni sono piccole, la spinta conta più delle perdite e l'ampiezza cresce; se sono grandi, le perdite contano più della spinta e l'ampiezza cala. Così, comunque lo si faccia partire, il pendolo si assesta sempre sulla stessa oscillazione: è un ciclo limite, ed è proprio per questo che l'orologio batte il tempo sempre allo stesso ritmo.
+
 > **Idea chiave.** Con la dissipazione il sistema perde memoria: moti partiti in modi diversi convergono sullo stesso attrattore, un punto fisso (quiete) o un ciclo limite (oscillazione stabile).
 
 > **Prova sul laboratorio.** Scheda 3 → «Prova: il punto fisso», poi «Prova: il ciclo limite». Il grafico di destra passa da solo allo spazio delle fasi. Poi aggiungi tu una carica di prova in un punto qualsiasi dentro l'anello: dove finisce?
 
-> **Curiosità.** Nello spazio a tre dimensioni nessuna disposizione di cariche ferme può tenere un'altra carica in equilibrio stabile (teorema di Earnshaw). Qui funziona perché la carica è costretta a restare sul piano.
+> **Attenzione: il tavolo che non si vede.** Nel laboratorio la carica di prova rotola dolcemente verso il centro dell'anello e ci resta. Nella realtà questo non succederebbe. Esiste un teorema, dovuto a Earnshaw, che dice: *con sole cariche ferme nello spazio non esiste nessun punto in cui una carica possa restare in equilibrio stabile.* Se la sposti un poco in qualche direzione, torna indietro; ma in almeno un'altra direzione scappa via.
+>
+> Pensa a un anello di cariche positive e a una carica positiva al centro. Se la sposti di lato, le cariche dell'anello più vicine la respingono e la rimandano al centro: sembra una ciotola. Ma se la sposti *in alto o in basso*, uscendo dal piano dell'anello, nulla la richiama: le cariche dell'anello la spingono ancora più lontano. Il centro è come il passo di una montagna: stabile andando avanti e indietro lungo il sentiero, instabile verso i due lati.
+>
+> Nel laboratorio la carica non può uscire dal piano, ma nessuna legge dell'elettricità la trattiene: è come se sotto ci fosse un tavolo invisibile, che con una **forza** non elettrica (la reazione del piano) la schiaccia sempre sul foglio. Il tavolo lo abbiamo aggiunto noi, per poter disegnare tutto su uno schermo. Senza, la carica di prova scivolerebbe fuori dal piano e l'equilibrio sparirebbe. Per questo le trappole reali per ioni non usano solo cariche ferme: aggiungono campi magnetici o campi che oscillano nel tempo.
+>
+> Quindi: i punti fissi e i cicli di questa sezione mostrano come ragionano i sistemi dinamici, ma **non** dicono che un anello di cariche tenga davvero ferma una carica.
 
 Quiete e oscillazione regolare sono attrattori semplici. Ne esiste un terzo tipo, molto meno ovvio, ed è quello in cui la regolarità scompare.
 
@@ -280,7 +300,9 @@ Le conseguenze sono pratiche. Quando l'errore cresce in modo esponenziale, migli
 
 > **Prova sul laboratorio.** Scheda 3 → «Prova: il biliardo elettrico», velocità 4×. Segui P1 e P2: dopo quanto tempo si separano? E P3?
 
-> **Prova sul laboratorio.** Scheda 3 → «Prova: l'attrattore strano», velocità 8×, schermo intero con «Solo fasi». Lascialo correre due minuti e guarda la forma che si costruisce. Poi aggiungi una nuova carica di prova in un punto lontano: finisce nella stessa regione?
+> **Prova sul laboratorio.** Scheda 3 → «Prova: l'attrattore strano», velocità 16×, schermo intero con «Solo fasi». Qui serve pazienza: per i primi minuti di moto simulato la traccia sembra quella del biliardo, e la figura si riconosce solo dopo circa 200 s (guarda il tempo t accanto ai pulsanti della velocità), cioè una dozzina di secondi di attesa a 16×; si completa verso 500 s. Poi aggiungi una nuova carica di prova in un punto lontano: finisce nella stessa regione?
+
+> **Esperimento.** Scheda 3 → «Prova: un attrattore compatto». Gli ostacoli sono più lontani dal centro e il motore è più lento. Quattro cariche partono da lati opposti dell'anello: guarda la mappa dall'alto e conta quanto tempo serve perché disegnino tutte la stessa figura. Poi scegli l'attrito «Nessuno» e premi «Ricomincia»: che cosa cambia, e perché?
 
 L'ultima sorpresa del percorso riguarda un caso in cui la fine di ogni viaggio è semplice, e l'incertezza riguarda soltanto *quale* fine sarà.
 
@@ -324,6 +346,8 @@ Il confine tra i bacini è di questo tipo: per quanto precisa sia la misura del 
 
 > **Esperimento.** Cambia il coefficiente γ dell'attrito (prima 0,1 s⁻¹, poi 0,4 s⁻¹) e ricalcola la mappa. Con meno attrito i confini diventano più intricati o più semplici? Perché?
 
+> **Esperimento.** Sotto «Prova: tre attrattori» ci sono altre due disposizioni. «Quattro attrattori» mette quattro cariche uguali ai vertici di un quadrato; «Tre cariche diverse» usa −2, −1 e −0,5 nC. Prima di calcolare la mappa, scommetti: quale carica avrà il bacino più grande? Poi ingrandisci un confine lontano dalle cariche: le strisce intrecciate compaiono anche qui?
+
 Siamo partiti da una carica e da una forza. Abbiamo costruito un paesaggio, lo abbiamo percorso, abbiamo guardato dall'alto tutti i viaggi possibili e abbiamo scoperto che anche in un mondo regolato da una legge esatta il futuro può non essere conoscibile. È un risultato che ha cambiato il modo di pensare la scienza: la fisica non promette di prevedere tutto, ma di capire che cosa si può prevedere e con quale precisione.
 
 ## Mettiti alla prova
@@ -334,7 +358,7 @@ Tra parentesi la sezione a cui si riferisce ogni domanda. Dove serve, usa k = 8,
 2. (2) Perché due isoipse diverse non possono incrociarsi?
 3. (2–3) Nel dipolo del laboratorio, nell'origine V = 0. Vuol dire che anche il campo è nullo? Controlla con la sonda.
 4. (3) Due isoipse distano 0,5 cm e differiscono di 100 V. Stima l'intensità del campo in V/m.
-5. (4) Una carica parte da ferma vicino a una sola carica fissa positiva. Segue la linea di campo? E se le cariche fisse sono due, come nel dipolo?
+5. (4) Una carica parte da ferma vicino a una sola carica fissa positiva. Segue la linea di campo? E se le cariche fisse sono due, come nel dipolo? Che cosa cambia se c'è un attrito molto forte?
 6. (5) In un'orbita circolare il raggio raddoppia. Come cambiano la velocità e il periodo?
 7. (5) Calcola la distanza minima dal centro nell'urto frontale del preset Rutherford: carica fissa +4 nC, q₀ = 1 nC, m = 1 g, velocità iniziale 7 cm/s. Suggerimento: nel punto più vicino tutta l'energia cinetica è diventata potenziale.
 8. (6–7) Qual è la differenza tra le orbite ellittiche della sezione 5 e il ciclo limite della sezione 7?
