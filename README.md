@@ -4,8 +4,7 @@
 
 - **[Simulatore](https://moxgreen.github.io/from-potential-to-chaos/dist/potenziale-cariche.html)**: il laboratorio interattivo, si usa direttamente nel browser.
 - **[Lezione](https://moxgreen.github.io/from-potential-to-chaos/dist/lezione-dal-potenziale-al-caos.html)**: canovaccio, note per il relatore e testo per lo studente.
-
-Sono due file HTML autonomi, senza server né connessione: basta aprirli nel browser (da GitHub Pages, oppure scaricandoli e facendo doppio clic).
+- **[Scarica tutto (zip)](https://moxgreen.github.io/from-potential-to-chaos/dist/laboratorio-potenziale.zip)**: i due file HTML con un breve `README.txt`, per usarli offline.
 
 Simulatore interattivo del potenziale e del campo elettrico, con una lezione per la quinta liceo scientifico che lo usa per arrivare, passo dopo passo, dai sistemi dinamici al caos.
 
@@ -23,7 +22,8 @@ Per usare il simulatore e la lezione basta aprire i file in `dist/`. Per cambiar
 make simulatore   # src/ -> dist/potenziale-cariche.html
 make lezione      # lezione/*.md + figure/ -> dist/lezione-dal-potenziale-al-caos.html
 make test         # test della fisica (node --test)
-make tutto        # test + simulatore + lezione
+make zip          # i due HTML + README.txt in dist/laboratorio-potenziale.zip
+make tutto        # test + simulatore + lezione + zip
 ```
 
 Per la lezione:
